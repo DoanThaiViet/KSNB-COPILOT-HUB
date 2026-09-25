@@ -78,7 +78,7 @@ AIM.views.work = (function () {
       <div class="run-top" style="--c:${g.color}"><div class="tk-ic" aria-hidden="true">${H.gIcon(u.groupId)}</div>
         <div>${u.assign === 'duty'
           ? `<div class="run-ai"><b>Kết quả cần có:</b> ${esc(clip(u.aiStep, 150))}</div>
-             <details class="run-more"><summary>Xem mô tả đầy đủ nhiệm vụ</summary>${u.full ? `<p><b>Nhiệm vụ:</b> ${esc(u.full)}</p>` : ''}<p><b>Sản phẩm đầu ra:</b> ${esc(u.aiStep)}</p>${u.auto || u.tech ? `<p><b>Khả năng số hóa:</b> ${esc([u.auto, u.tech].filter(Boolean).join('. '))}</p>` : ''}</details>`
+             <details class="run-more"><summary>Xem mô tả đầy đủ nhiệm vụ</summary>${u.full ? `<p><b>Nhiệm vụ:</b> ${esc(u.full)}</p>` : ''}<p><b>Sản phẩm đầu ra:</b> ${esc(u.aiStep)}</p></details>`
           : `<div class="run-ai"><b>AI giúp:</b> ${esc(u.aiStep)}</div>`}
         <div class="run-save">${u.assign ? esc([H.roleLabel(u.assign), u.tag, u.freq && (u.qty ? u.qty + ' lần · ' : '') + u.freq.toLowerCase(), u.note].filter(Boolean).join(' · ')) : `${hrs(u.before)} giờ → <b>${hrs(u.after)} giờ</b>/lần · ${esc(C.frequencies[u.freq]?.label || '')} · tiết kiệm ước tính ${nf(L.savedHours(u), 1)} giờ/tháng`}</div></div></div>
       <ol class="run">

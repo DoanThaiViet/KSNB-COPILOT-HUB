@@ -84,7 +84,7 @@ AIM.hub = (function () {
       tools: ['KS-20', 'KS-21', 'KP-20', 'KP-21', 'KS-02', 'KA-01'] });
     ((AIM.bm01 || {})[p.id] || []).forEach((x, i) => { const c = classify(shortName(x.nv), x.nv, x.out);
       list.push({ id: 'AS-' + p.id + '-' + i, assign: 'duty', task: shortName(x.nv || x.out), full: x.nv, aiStep: x.out, groupId: c[2], tag: c[1],
-        freq: x.freq, qty: x.qty, auto: x.auto, tech: x.tech, tools: c[3] }); });
+        freq: x.freq, qty: x.qty, tools: c[3] }); });
     asgCache = { key: p.id, list };
     return list;
   }
