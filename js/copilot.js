@@ -57,7 +57,7 @@ AIM.copilot = (function () {
     task:   { label: 'Công việc',        icon: '◧' },
     tool:   { label: 'Công cụ AI',        icon: '✦' },
     tip:    { label: 'Mẹo dùng Copilot',  icon: '✧' },
-    sample: { label: 'Sản phẩm mẫu',      icon: '▣' },
+    sample: { label: 'Sản phẩm tạo bởi Copilot', icon: '▣' },
     faq:    { label: 'Câu hỏi thường gặp', icon: '?' },
     person: { label: 'Cán bộ',            icon: '◉' },
     page:   { label: 'Trang',             icon: '→' }

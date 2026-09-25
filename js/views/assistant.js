@@ -50,11 +50,11 @@ AIM.views.knowledge = (function () {
     const lib = S.all('library').filter(x => x.status !== 'Deprecated');
     const cats = [
       ['prompts', 'Câu lệnh mẫu', `${lib.filter(x => x.type === 'prompt').length} câu lệnh đã chuẩn hóa`, 'prompts'],
-      ['samples', 'Sản phẩm mẫu', `${(AIM.views.samples.samples || []).length} sản phẩm đầu ra minh họa`, 'samples'],
+      ['samples', 'Sản phẩm tạo bởi Copilot', `${(AIM.views.samples.samples || []).length} sản phẩm đầu ra minh họa`, 'samples'],
       ['tips', 'Mẹo dùng Copilot', `${S.all('tips').length} mẹo theo Word, Excel, Outlook…`, 'tips'],
-      ['skills', 'Quy trình nhiều bước', `${lib.filter(x => x.type === 'skill').length} quy trình dùng lại`, 'skills']
+      ['agents', 'Agent', `${lib.filter(x => x.type === 'agent').length} trợ lý tự động`, 'agents']
     ];
-    return `<div class="kcats">${cats.map(([ic, t, s, nav]) => `<button class="kcat" data-nav="${nav}"><span class="kcat-ic" aria-hidden="true">${AIM.icons[ic]}</span><b>${esc(t)}</b><small>${esc(s)}</small><em>→</em></button>`).join('')}</div>
+    return `<div class="kcats">${cats.map(([ic, t, s, nav]) => `<button class="kcat" data-nav="${nav}" data-sec="knowledge"><span class="kcat-ic" aria-hidden="true">${AIM.icons[ic]}</span><b>${esc(t)}</b><small>${esc(s)}</small><em>→</em></button>`).join('')}</div>
       <div class="blk"><div class="blk-h"><div><h3>Câu hỏi thường gặp</h3><p>Trả lời dựng từ nội dung đã được Ban KSNB kiểm duyệt</p></div></div>
         <div class="faq">${CP().FAQ.map(f => `<details><summary>${esc(f.q.split('?')[0])}?</summary><div class="faq-a">${f.a()}</div></details>`).join('')}</div></div>`;
   }
@@ -73,7 +73,7 @@ AIM.views.knowledge = (function () {
       const k = e.target.closest('[data-k]'); if (k) { kind = k.dataset.k; U.$$('[data-k]', el).forEach(b => b.classList.toggle('active', b === k)); return draw(); }
       const o = e.target.closest('[data-open]'); if (o) { const [a, ...b] = o.dataset.open.split(':'); return CP().open(a, b.join(':')); }
       const a = e.target.closest('[data-ask]'); if (a) return CP().panelOpen(a.dataset.ask);
-      const n = e.target.closest('[data-nav]'); if (n) return AIM.app.go(n.dataset.nav);
+      const n = e.target.closest('[data-nav]'); if (n) return AIM.app.go(n.dataset.nav, null, n.dataset.sec);
     });
   }
   return { title: 'Tra cứu nhanh', render };
