@@ -95,7 +95,7 @@ AIM.copilot = (function () {
   function search(q, o = {}) {
     const qn = norm(q); if (!qn) return [];
     const qt = toks(q).length ? toks(q) : qn.split(' '), qb = bigrams(qt);
-    index = index || build();
+    if (!index || index.role !== H.role()) { index = build(); index.role = H.role(); }   // trang Điều hành chỉ vào chỉ mục khi persona được xem
     const need = Math.min(qt.length, 2);   // ít nhất một phần từ khóa phải khớp
     return index
       .filter(d => !o.kinds || o.kinds.includes(d.kind))
