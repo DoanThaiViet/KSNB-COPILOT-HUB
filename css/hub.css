@@ -120,7 +120,7 @@ nav.menu .cnt.gov{font-size:9.5px;letter-spacing:.04em;background:#eef0fb;color:
 
 /* Gợi ý AI */
 .recs{position:relative;display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:center;border-radius:var(--r-lg);padding:20px 22px;margin-bottom:22px;overflow:hidden;color:#fff;
-  background:linear-gradient(100deg,rgba(15,29,70,.96) 0%,rgba(15,29,70,.88) 45%,rgba(15,29,70,.55) 100%),var(--img) center/cover no-repeat,#0f1d46}
+  background:linear-gradient(100deg,rgba(8,40,33,.96) 0%,rgba(8,40,33,.86) 45%,rgba(8,40,33,.5) 100%),var(--img) center/cover no-repeat,#08281f}
 .recs-h{display:flex;gap:12px;align-items:center}
 .recs-h h3{font-size:17px;font-weight:800}
 .recs-h p{font-size:12.5px;color:#b8c7e6}
@@ -194,7 +194,7 @@ nav.menu .cnt.gov{font-size:9.5px;letter-spacing:.04em;background:#eef0fb;color:
 
 /* ---------- Đầu khu vực (ảnh + tab con) ---------- */
 .sec-hero{position:relative;border-radius:var(--r-lg);overflow:hidden;min-height:150px;display:flex;align-items:center;
-  background:linear-gradient(90deg,rgba(12,26,62,.94) 0%,rgba(12,26,62,.82) 42%,rgba(12,26,62,.25) 78%,rgba(12,26,62,.05) 100%),var(--img) right 35%/cover no-repeat,#0f1d46;color:#fff;box-shadow:var(--shadow)}
+  background:linear-gradient(90deg,rgba(8,40,33,.94) 0%,rgba(8,40,33,.82) 42%,rgba(8,40,33,.25) 78%,rgba(8,40,33,.05) 100%),var(--img) right 35%/cover no-repeat,#08281f;color:#fff;box-shadow:var(--shadow)}
 .sec-hero.noimg{background:linear-gradient(115deg,#00843d 0%,#006838 34%,#0a5a52 56%,#262d7a 100%)}
 .sec-copy{padding:24px 30px;max-width:620px}
 .sec-copy .eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9fe3bc}
@@ -358,3 +358,20 @@ nav.menu .msub button.on{color:var(--navy);font-weight:700;background:#f3f4fb}
 nav.menu .msub button::before{display:none}
 nav.menu .msub .cnt{font-size:10.5px}
 @media(max-width:1024px){ .msub{display:none} }
+
+/* Chọn cán bộ */
+.who-pick{margin-top:18px}
+.who-pick-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.who-pick-h b{font-size:13px;color:var(--ink2)}
+.who-pick-h input{flex:0 1 240px;height:34px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:13px}
+.who-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:280px;overflow:auto;padding:2px}
+.who-i{display:flex;gap:10px;align-items:center;text-align:left;border:1.5px solid var(--line2);background:#f8fafb;border-radius:11px;padding:7px 10px;cursor:pointer}
+.who-i:hover{border-color:#cfdcd5;background:#f1f6f4}
+.who-i .av{width:30px;height:30px;font-size:11px;flex:none}
+.who-i b{display:block;font-size:13px}
+.who-i small{display:block;font-size:11.5px;color:var(--muted)}
+.who-i.on{border-color:var(--green2);background:#effaf3;box-shadow:0 0 0 3px #d8f1e2}
+.who-i[hidden]{display:none}
+.hero-grps{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.hero-grps i{font-style:normal;font-size:11.5px;font-weight:600;color:var(--green);background:rgba(227,243,233,.9);border-radius:20px;padding:2px 9px}
+@media(max-width:720px){ .who-list{grid-template-columns:1fr} .who-pick-h{flex-direction:column;align-items:stretch} }

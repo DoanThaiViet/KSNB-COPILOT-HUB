@@ -154,13 +154,13 @@ AIM.config = {
      Đây là lựa chọn hiển thị trên máy (demo), KHÔNG phải xác thực/phân quyền.
      defaultPerson: cán bộ mẫu dùng khi chưa chọn tên. */
   roles: {
-    cv:    { label: 'Nhân sự',          short: 'Nhân sự',   canEdit: true,  governance: false, defaultPerson: 'p07',
+    cv:    { label: 'Nhân sự',          short: 'Nhân sự',   canEdit: true,  governance: false, defaultPerson: 'p06',
              note: 'Việc cần làm · AI trợ giúp · hướng dẫn ngắn' },
     pic:   { label: 'PIC / Đầu mối',    short: 'PIC',       canEdit: true,  governance: true,  defaultPerson: 'p05',
              note: 'Tiến độ nhóm · use case chưa triển khai · người cần hỗ trợ' },
     ld:    { label: 'Lãnh đạo Ban',     short: 'Lãnh đạo',  canEdit: false, governance: true,  defaultPerson: 'p02', leadOnly: true,
              note: 'Mức độ sử dụng · hiệu quả · rủi ro · việc cần quyết định' },
-    admin: { label: 'Điều phối / Admin', short: 'Điều phối', canEdit: true,  governance: true,  defaultPerson: 'p05',
+    admin: { label: 'Điều phối / Admin', short: 'Điều phối', canEdit: true,  governance: true,  defaultPerson: 'p06',
              note: 'Thư viện Prompt/Skill/Agent · dữ liệu · quản trị' }
   },
 

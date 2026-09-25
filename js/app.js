@@ -77,12 +77,23 @@ AIM.app = (function () {
       title: 'Không gian làm việc', sub: '<span>Chọn vai trò để thấy đúng việc của mình. Đây là tùy chọn hiển thị trên máy này, không phải phân quyền.</span>',
       body: `<div class="persona-grid">${Object.entries(C.roles).map(([k, v]) => `<button class="persona${k === r ? ' on' : ''}" data-persona="${k}" aria-pressed="${k === r}">
           <b>${esc(v.label)}</b><small>${esc(v.note)}</small></button>`).join('')}</div>
-        <div class="fld" style="margin-top:16px"><label for="whoSel">Cán bộ${C.roles[r].leadOnly ? ' (Lãnh đạo Ban)' : ''}</label>
-          <select id="whoSel">${pool.map(x => AIM.ui.opt(x.id, x.name + ' · ' + x.title, p && p.id)).join('')}</select></div>`,
+        <div class="who-pick"><div class="who-pick-h"><b>Chọn cán bộ${C.roles[r].leadOnly ? ' (Lãnh đạo Ban)' : ''}</b>
+          <input type="search" id="whoQ" placeholder="Gõ tên hoặc phòng…" aria-label="Tìm cán bộ" autocomplete="off"></div>
+          <div class="who-list" id="whoList" role="listbox" aria-label="Cán bộ">${pool.map(x => `<button class="who-i${p && x.id === p.id ? ' on' : ''}" data-pid="${x.id}" role="option" aria-selected="${!!(p && x.id === p.id)}"
+            data-key="${esc(AIM.copilot.norm(x.name + ' ' + x.title + ' ' + (x.unit || '')))}"><span class="av">${esc(AIM.ui.initials(x.name))}</span>
+            <span><b>${esc(x.name)}</b><small>${esc(x.title)}${x.unit ? ' · ' + esc(x.unit) : ''}</small></span></button>`).join('')}</div></div>`,
       foot: '<button class="btn primary" data-close>Xong</button>',
       onMount: pn => {
         pn.addEventListener('click', e => { const k = e.target.closest('[data-persona]'); if (k) { setRole(k.dataset.persona); openIdentity(); } });
-        pn.addEventListener('change', e => { if (e.target.id === 'whoSel') { H.setPerson(e.target.value); renderIdentity(); render(); } });
+        pn.addEventListener('click', e => {
+          const w = e.target.closest('[data-pid]'); if (!w) return;
+          H.setPerson(w.dataset.pid); renderIdentity(); render();
+          AIM.ui.$$('.who-i', pn).forEach(x => { const on = x === w; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
+          AIM.ui.toast('Đang xem với tư cách: ' + w.querySelector('b').textContent);
+        });
+        pn.addEventListener('input', e => { if (e.target.id !== 'whoQ') return; const q = AIM.copilot.norm(e.target.value);
+          AIM.ui.$$('.who-i', pn).forEach(x => { x.hidden = !!q && !x.dataset.key.includes(q); }); });
+        const cur = AIM.ui.$('.who-i.on', pn); cur && cur.scrollIntoView({ block: 'nearest' });
       }
     });
   }

@@ -81,7 +81,7 @@ AIM.views.home = (function () {
         <div class="hero-eyebrow"><span>Không gian của tôi · ${esc(C.roles[r].label)}</span>
           <button class="linkish" data-identity>Đổi vai trò</button></div>
         <h2>Chào anh/chị ${esc(p ? p.name : '')}</h2>
-        <div class="hero-role">${esc(p ? p.title : '')}${groups.length ? ' · ' + esc(groups.slice(0, 3).join(' · ')) : ''}</div>
+        <div class="hero-role">${esc(p ? p.title : '')}${p && p.unit ? ' · ' + esc(p.unit) : ''}${groups.length ? `<span class="hero-grps">${groups.slice(0, 4).map(g => `<i>${esc(g)}</i>`).join('')}</span>` : ''}</div>
         <p class="hero-line">${line}</p>
         <form class="hero-ask" id="heroAsk" role="search"><span class="cp-orb sm" aria-hidden="true"></span>
           <input id="heroQ" placeholder="Hỏi Copilot hoặc tìm nhanh: “rà soát tờ trình”, “so sánh văn bản”…" aria-label="Hỏi Copilot">
