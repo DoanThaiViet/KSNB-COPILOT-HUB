@@ -42,11 +42,11 @@ AIM.views.home = (function () {
   /* ---------- Thẻ công việc ---------- */
   function tile(u) {
     const g = U.group(u.groupId), tools = H.toolsFor(u.id), d = L.dueState(u.deadline, u.status === 'Approved');
-    const best = tools.find(H.ready), building = !best && tools.length;
+    const best = tools[0];
     return `<article class="tk" style="--c:${g.color}">
       <div class="tk-ic" aria-hidden="true">${H.gIcon(u.groupId)}</div>
       <div class="tk-b"><h4>${esc(u.task)}</h4><p>${esc(clip(u.aiStep, 92))}</p>
-        <div class="tk-m">${U.status(u.status)}${d ? `<span class="tk-due ${d.key}">${esc(d.label)}</span>` : ''}${best ? `<span class="tk-tool">${esc(H.kind(best.type).label)}</span>` : building ? '<span class="tk-tool off">Công cụ đang xây</span>' : ''}</div></div>
+        <div class="tk-m">${u.assign === 'common' ? '<span class="tk-role r-common">Việc chung của Ban</span>' : u.assign ? `<span class="tk-role r-duty">${esc(u.tag)}</span>${u.freq ? `<span class="tk-freq">${esc(u.freq)}</span>` : ''}` : '<span class="tk-role r-uc">Ứng dụng AI được giao</span>'}${d ? `<span class="tk-due ${d.key}">${esc(d.label)}</span>` : ''}${best ? `<span class="tk-tool">${esc(H.kind(best.type).label)}</span>` : ''}</div></div>
       <button class="btn primary sm tk-go" data-run="${esc(u.id)}" aria-label="Thực hiện: ${esc(u.task)}">Thực hiện</button>
     </article>`;
   }
@@ -55,21 +55,22 @@ AIM.views.home = (function () {
   /* ---------- Gợi ý AI chủ động ---------- */
   function recs(tasks, max = 3) {
     const out = [], seen = new Set();
-    tasks.filter(u => u.status !== 'Approved').concat(tasks.filter(u => u.status === 'Approved')).forEach(u => {
-      H.toolsFor(u.id).filter(x => x.type !== 'prompt' && H.ready(x)).forEach(x => {
+    /* Ưu tiên Skill (cách làm chuẩn) gắn với việc; bỏ qua Agent còn ở mức thiết kế */
+    tasks.forEach(u => {
+      H.toolsFor(u.id).filter(x => x.type !== 'prompt' && x.status !== 'Draft').forEach(x => {
         if (seen.has(x.id) || out.length >= max) return; seen.add(x.id);
-        out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `${esc(H.kind(x.type).label)} <b>${esc(x.name)}</b>`, note: x.status === 'Testing' ? 'bản thử nghiệm' : 'đã duyệt' });
+        out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `${esc(H.kind(x.type).label.toLowerCase())} <b>${esc(x.name)}</b>` });
       });
     });
     tasks.forEach(u => {
       if (out.length >= max) return;
-      const x = H.toolsFor(u.id).find(t => t.type === 'prompt' && t.status === 'Approved');
-      if (x && !seen.has(x.id)) { seen.add(x.id); out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `câu lệnh mẫu <b>${esc(x.name)}</b>`, note: 'đã duyệt' }); }
+      const x = H.toolsFor(u.id).find(t => t.type === 'prompt');
+      if (x && !seen.has(x.id)) { seen.add(x.id); out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `câu lệnh mẫu <b>${esc(x.name)}</b>` }); }
     });
     if (!out.length) return '';
     return `<div class="recs" style="--img:url('${esc(H.visual('assistant'))}')">
       <div class="recs-h"><span class="cp-orb" aria-hidden="true"></span><div><h3>Gợi ý cho bạn</h3><p>AI đề xuất công cụ phù hợp với việc đang làm</p></div></div>
-      <div class="recs-l">${out.map(r => `<button class="rec" data-run="${esc(r.u.id)}"><span>${r.why}</span><span class="rec-arrow">→ thử ${r.what}</span><small>${esc(r.note)}</small></button>`).join('')}</div></div>`;
+      <div class="recs-l">${out.map(r => `<button class="rec" data-run="${esc(r.u.id)}"><span>${r.why}</span><span class="rec-arrow">→ thử ${r.what}</span></button>`).join('')}</div></div>`;
   }
 
   /* ---------- Hero ---------- */
@@ -98,9 +99,9 @@ AIM.views.home = (function () {
 
   function workBlock(mine, title) {
     const hub = H.scope() === 'hub';
-    const list = hub ? featured() : [...mine].sort(H.prioritySort).slice(0, 6);
+    const list = hub ? featured() : mine.slice(0, 6);   // mine đã xếp theo thứ tự ưu tiên (H.allMine)
     return `<section class="blk" id="myWork">${head(hub ? 'Công việc tiêu biểu toàn Hub' : title,
-        hub ? 'Ứng dụng AI đã duyệt/thử nghiệm, xếp theo giờ tiết kiệm' : `${mine.length} việc được giao · xếp theo hạn và mức ưu tiên`,
+        hub ? 'Ứng dụng AI xếp theo giờ tiết kiệm' : `${mine.length} việc · việc chung của Ban, ứng dụng AI được giao và nhiệm vụ theo phân công`,
         `<div class="blk-acts">${scopeSeg()}<button class="btn sm ghost" data-nav="work${hub ? '?scope=hub' : ''}">Xem tất cả →</button></div>`)}
       ${list.length ? tiles(list) : `<div class="empty-note">Chưa có công việc được giao cho cán bộ này. <button class="linkish" data-scope="hub">Xem công việc tiêu biểu toàn Hub</button></div>`}</section>`;
   }
@@ -109,14 +110,14 @@ AIM.views.home = (function () {
 
   /* ================= Persona: Nhân sự ================= */
   function staff(el, p) {
-    const mine = H.myTasks().filter(u => L.owners(u).includes(p.id));
-    const need = mine.filter(H.needsAction);
-    const helpers = S.all('library').filter(x => H.ready(x) && mine.some(u => u.id === x.useCaseId));   // công cụ đã dùng được (duyệt/thử nghiệm) gắn với việc của tôi
-    const runs = H.myRuns(), recent = Object.keys(runs).map(id => S.get('useCases', id)).filter(Boolean).slice(0, 4);
+    const mine = H.allMine(), ucs = mine.filter(u => !u.assign);
+    const need = ucs.filter(H.needsAction);
+    const helpers = new Set(mine.flatMap(u => H.toolsFor(u.id).filter(x => x.status !== 'Draft').map(x => x.id)));   // công cụ dùng được cho việc của tôi
+    const runs = H.myRuns(), recent = Object.keys(runs).map(H.findTask).filter(Boolean).slice(0, 4);
     el.innerHTML = hero(p,
-      `Hôm nay có <b>${need.length}</b> công việc cần xử lý · <b>${helpers.length}</b> công cụ AI sẵn sàng hỗ trợ`,
+      `Bạn có <b>${mine.length}</b> nhiệm vụ · <b>${need.length}</b> việc sắp đến hạn · <b>${helpers.size}</b> công cụ AI hỗ trợ`,
       cta('<span>▶</span> Bắt đầu một công việc', 'data-start', 'primary') + cta('✦ Hỏi Copilot', 'data-ask') + cta('Xem công việc của tôi', 'data-nav="work"'),
-      asideStat(nf(myHours(mine)) + '<small> giờ/tháng</small>', 'Tiết kiệm ước tính của tôi', `${mine.filter(u => u.status === 'Approved').length}/${mine.length} việc đã có AI chính thức`))
+      asideStat(nf(myHours(ucs)) + '<small> giờ/tháng</small>', 'Tiết kiệm ước tính của tôi', `từ ${ucs.length} ứng dụng AI được giao`))
     + workBlock(mine, 'Công việc của tôi')
     + recs(mine)
     + (recent.length ? `<section class="blk">${head('Tiếp tục gần đây', 'Những việc bạn đã thực hiện với AI trên máy này')}<div class="chips">${recent.map(u => `<button class="chip" data-run="${u.id}">${esc(u.task)}<em>${runs[u.id]} lần</em></button>`).join('')}</div></section>` : '')

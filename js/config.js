@@ -17,7 +17,7 @@ AIM.config = {
   data: {
     mode: 'local',
     storageKey: 'aim.v1',
-    schemaVersion: 15,   // 14: thư viện Prompt/Skill/Agent KSNB · 15: Văn Kim Hoàng thuộc Lãnh đạo Ban
+    schemaVersion: 16,   // 14: thư viện Prompt/Skill/Agent KSNB · 15: Văn Kim Hoàng thuộc Lãnh đạo Ban · 16: chức danh theo BM01
     rest: { baseUrl: '/api', headers: {} }
   },
 

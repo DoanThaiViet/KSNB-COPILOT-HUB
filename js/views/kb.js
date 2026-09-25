@@ -26,7 +26,7 @@ AIM.kb = (function () {
   }
   function openDoc(id) {
     const x = S.get('library', id); if (!x) return;
-    U.modal({ wide: true, title: esc(x.file || x.id), sub: `<span>${esc(x.name)}</span>${U.status(x.status)}`,
+    U.modal({ wide: true, title: esc(x.file || x.id), sub: `<span>${esc(x.name)}</span>`,
       body: `<div class="mdoc">${x.doc ? md(x.doc) : '<p>Mục này chưa có tệp SKILL.md.</p>'}</div>`,
       foot: `${x.instruction ? '<button class="btn primary" data-cp>Sao chép prompt</button>' : ''}<button class="btn" data-close>Đóng</button>`,
       onMount: p => p.addEventListener('click', e => { if (e.target.closest('[data-cp]')) U.copy(x.instruction); }) });
@@ -79,7 +79,7 @@ AIM.views.kbskills = (function () {
   function card(x) {
     const u = S.get('useCases', x.useCaseId), me = K.forMe(x);
     return `<article class="kb-card">
-      <div class="kb-top"><span class="kb-tag">${esc(K.tagOf(x))}</span>${me ? '<span class="kb-me">Nhóm của bạn</span>' : ''}<span class="sp"></span>${U.status(x.status)}</div>
+      <div class="kb-top"><span class="kb-tag">${esc(K.tagOf(x))}</span>${me ? '<span class="kb-me">Nhóm của bạn</span>' : ''}<span class="sp"></span></div>
       <h4>${esc(x.name)}</h4>
       <dl class="kb-dl"><dt>Khi nào dùng</dt><dd>${esc(clip(x.purpose, 150))}</dd>
         <dt>Cần có</dt><dd>${esc(clip(x.input, 140) || '–')}</dd>
@@ -142,7 +142,7 @@ AIM.views.kbagents = (function () {
     const flow = x.flow || (x.steps || []).slice(0, 5);
     const sk = (x.skills || []).map(id => S.get('library', id)).filter(Boolean);
     return `<article class="ag-card">
-      <div class="kb-top"><span class="kb-tag">${esc(K.tagOf(x))}</span>${K.forMe(x) ? '<span class="kb-me">Nhóm của bạn</span>' : ''}<span class="sp"></span><span class="ag-st s-${x.status}">${esc(stLabel(x))}</span></div>
+      <div class="kb-top"><span class="kb-tag">${esc(K.tagOf(x))}</span>${K.forMe(x) ? '<span class="kb-me">Nhóm của bạn</span>' : ''}<span class="sp"></span></div>
       <h4>${esc(x.name)}</h4>${x.alias ? `<div class="faint ag-alias">${esc(x.alias)}</div>` : ''}
       <p class="ag-what">${esc(x.purpose)}</p>
       ${flow.length ? `<div class="ag-chain">${flow.map(s => `<span>${esc(s)}</span>`).join('<i>→</i>')}</div>` : x.trigger ? `<div class="ag-trig"><b>Tự chạy khi:</b> ${esc(x.trigger)}</div>` : ''}
@@ -154,14 +154,14 @@ AIM.views.kbagents = (function () {
     const x = S.get('library', id); if (!x) return;
     const sk = (x.skills || []).map(i => S.get('library', i)).filter(Boolean);
     const states = x.states || Object.keys(STATES);
-    U.modal({ wide: true, title: esc(x.name), sub: `<span class="faint">${esc(x.alias || x.id)}</span><span class="ag-st s-${x.status}">${esc(stLabel(x))}</span>`,
+    U.modal({ wide: true, title: esc(x.name), sub: `<span class="faint">${esc(x.alias || x.id)}</span>`,
       body: `<p class="ag-what">${esc(x.purpose)}</p>
         <h4 class="ag-h">Luồng xử lý</h4><ol class="ag-flow v">${(x.steps && x.steps.length ? x.steps : STEPS.map(s => s[0] + ': ' + s[1])).map((s, i) => { const gate = /gate/i.test(s);
           return `<li class="${gate ? 'gate' : ''}"><span>${gate ? '🛡' : i + 1}</span><b>${esc(STEPS[i] ? STEPS[i][0] : '')}</b><small>${esc(s.replace(/^[A-Za-z ]+:\s*/, '').replace(/^./, c => c.toUpperCase()))}</small></li>`; }).join('')}</ol>
         <h4 class="ag-h">Hồ sơ đi qua các trạng thái</h4><div class="ag-states">${states.map(s => `<span>${esc(STATES[s] || s)}</span>`).join('<i>→</i>')}</div>
         ${sk.length ? `<h4 class="ag-h">Các Skill được gọi</h4><div class="lst">${sk.map(s => `<button class="li" data-doc="${esc(s.id)}"><span><b>${esc(s.name)}</b><small>${esc(s.id)} · ${esc(s.purpose)}</small></span><em>SKILL.md →</em></button>`).join('')}</div>` : ''}
         ${x.guardrails ? `<h4 class="ag-h">Giới hạn</h4><p>${esc(x.guardrails)}</p>` : ''}
-        ${x.status === 'Draft' ? '<p class="note-warn">Agent đang ở mức thiết kế: chưa kết nối hệ thống, chưa chạy tự động. Trong lúc chờ triển khai, dùng các Skill bên trên theo đúng thứ tự.</p>' : ''}`,
+        ${x.status === 'Draft' ? '<p class="note-warn">Agent chưa kết nối hệ thống nên chưa chạy tự động. Trong lúc chờ, dùng các Skill bên trên theo đúng thứ tự.</p>' : ''}`,
       foot: `${x.doc ? '<button class="btn" data-mdoc>Xem tệp mô tả</button>' : ''}<button class="btn primary" data-close>Đóng</button>`,
       onMount: p => p.addEventListener('click', e => { const d = e.target.closest('[data-doc]'); if (d) K.openDoc(d.dataset.doc); if (e.target.closest('[data-mdoc]')) K.openDoc(x.id); }) });
   }
