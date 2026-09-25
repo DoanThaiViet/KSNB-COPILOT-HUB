@@ -17,7 +17,7 @@ AIM.config = {
   data: {
     mode: 'local',
     storageKey: 'aim.v1',
-    schemaVersion: 13,
+    schemaVersion: 14,   // 14: thêm thư viện Prompt/Skill/Agent KSNB
     rest: { baseUrl: '/api', headers: {} }
   },
 

@@ -32,8 +32,8 @@ AIM.copilot = (function () {
     { id: 'kinds', q: 'Prompt Skill Agent khác nhau thế nào? Khi nào dùng Agent?',
       a: () => `<ul><li><b>Câu lệnh mẫu (Prompt)</b>: dùng một lần cho một yêu cầu, sao chép vào Copilot Chat/Word/Excel.</li>
         <li><b>Quy trình nhiều bước (Skill)</b>: chuỗi câu lệnh theo thứ tự cố định, dùng lại cho cả Ban.</li>
-        <li><b>Trợ lý tự động (Agent)</b>: tự chạy theo sự kiện hoặc lịch. Chỉ xây khi công việc đủ ${C.agentCriteria.length} tiêu chí: ${C.agentCriteria.map(c => esc(c.label.toLowerCase()) + (c.rule ? ' (' + esc(c.rule.toLowerCase()) + ')' : '')).join('; ')}.</li></ul>`,
-      acts: [['page', 'agents', 'Xem danh sách Agent']] },
+        <li><b>Trợ lý tự động (Agent)</b>: như một “thư ký chuyên trách” theo cả quy trình nhiều bước, tự gọi các Skill và dừng lại chờ cán bộ duyệt ở điểm quan trọng. Chỉ xây khi công việc đủ ${C.agentCriteria.length} tiêu chí: ${C.agentCriteria.map(c => esc(c.label.toLowerCase()) + (c.rule ? ' (' + esc(c.rule.toLowerCase()) + ')' : '')).join('; ')}.</li></ul>`,
+      acts: [['page', 'kbagents', 'Agent là gì? Xem minh họa']] },
     { id: 'data', q: 'Có được đưa tài liệu nội bộ, tài liệu mật lên Copilot không? Bảo mật dữ liệu',
       a: () => tipHTML(tip('TP-19')) + `<p class="faint">Nguồn: mẹo ${esc('TP-19')} của Ban KSNB. Quy định bảo mật cụ thể áp dụng theo văn bản hiện hành của Tổng Công ty.</p>`,
       acts: [['tip', 'TP-19', 'Xem mẹo TP-19'], ['tip', 'TP-31', 'Bốn điều không nên làm']] },
@@ -116,7 +116,7 @@ AIM.copilot = (function () {
   }
   function open(kind, id) {
     if (kind === 'task') return AIM.views.work.run(id);
-    if (kind === 'tool') return AIM.lib.open(id);
+    if (kind === 'tool') { const x = S.get('library', id); if (x && x.type === 'agent' && x.flow) return AIM.views.kbagents.open(id); if (x && x.doc) return AIM.kb.openDoc(id); return AIM.lib.open(id); }
     if (kind === 'tip') return openTip(id);
     if (kind === 'sample') return AIM.views.samples.open(id);
     if (kind === 'person') return AIM.views.people.open(id);

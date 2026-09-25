@@ -16,14 +16,14 @@ AIM.app = (function () {
       tabs: [['work', 'Việc của tôi'], ['usecases', 'Danh mục ứng dụng AI']] },
     { key: 'assistant', label: 'Trợ lý AI', desc: 'Hỏi nhanh, hoặc dùng trợ lý tự động (Agent) và quy trình nhiều bước (Skill) đã được Ban xây dựng.',
       tabs: [['assistant', 'Hỏi Copilot'], ['agents', 'Trợ lý tự động (Agent)'], ['skills', 'Quy trình (Skill)']] },
-    { key: 'knowledge', label: 'Kho tri thức', desc: 'Tra cứu câu lệnh mẫu, trợ lý tự động, mẹo dùng Copilot và sản phẩm do Copilot tạo — một ô tìm cho tất cả.',
-      tabs: [['knowledge', 'Tra cứu nhanh'], ['prompts', 'Prompt'], ['agents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']],
+    { key: 'knowledge', label: 'Kho tri thức', desc: 'Prompt dùng ngay, Skill làm theo cách chuẩn, Agent theo cả quy trình — cùng mẹo dùng Copilot và sản phẩm do Copilot tạo.',
+      tabs: [['knowledge', 'Tra cứu nhanh'], ['prompts', 'Prompt'], ['kbskills', 'Skill'], ['kbagents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']],
       /* Mục con hiện ngay dưới menu để biết kho gồm những gì */
-      sub: [['prompts', 'Prompt'], ['agents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']] },
+      sub: [['prompts', 'Prompt'], ['kbskills', 'Skill'], ['kbagents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']] },
     { key: 'govern', label: 'Điều hành', gov: true, desc: 'Mức độ sử dụng, hiệu quả, lộ trình và nhân sự — dành cho Lãnh đạo, PIC và điều phối.',
       tabs: [['dashboard', 'Tổng quan triển khai'], ['roadmap', 'Lộ trình'], ['people', 'Nhân sự & mức độ tham gia']] }
   ];
-  const KEYWORDS = { usecases: 'use case danh sach', prompts: 'prompt thu vien cau lenh', agents: 'agent tro ly', skills: 'skill quy trinh', tips: 'meo tips', dashboard: 'kpi thong ke bao cao', roadmap: 'lo trinh ke hoach', people: 'can bo nhan su adoption' };
+  const KEYWORDS = { kbskills: 'skill quy trinh sop skill.md', kbagents: 'agent tro ly tu dong la gi', usecases: 'use case danh sach', prompts: 'prompt thu vien cau lenh', agents: 'agent tro ly', skills: 'skill quy trinh', tips: 'meo tips', dashboard: 'kpi thong ke bao cao', roadmap: 'lo trinh ke hoach', people: 'can bo nhan su adoption' };
   const ICONS = {
     home: '<svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
     work: '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>',

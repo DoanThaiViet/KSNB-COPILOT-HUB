@@ -51,11 +51,11 @@ AIM.views.work = (function () {
         <div class="btn-row"><button class="btn primary sm" data-copy="${cp(x.instruction)}">Sao chép câu lệnh</button><a class="btn sm" href="${esc(C.assistant.copilotUrl)}" target="_blank" rel="noopener">Mở ${esc((C.tools[S.get('useCases', x.useCaseId)?.tool] || C.tools.chat).label)} ↗</a></div>`;
     else if (x.type === 'skill') body = `<ol class="run-steps">${refs.map(s => { const m = s.match(/PR-\d+/); const pr = m && S.get('library', m[0]);
         return `<li>${esc(s)}${pr && pr.instruction ? ` <button class="linkish" data-copy="${cp(pr.instruction)}">sao chép ${esc(pr.id)}</button>` : ''}</li>`; }).join('')}</ol>
-        <div class="btn-row"><button class="btn sm" data-lib="${esc(x.id)}">Xem hướng dẫn đầy đủ</button></div>`;
+        <div class="btn-row">${x.instruction && x.doc ? `<button class="btn primary sm" data-copy="${cp(x.instruction)}">Sao chép prompt</button>` : ''}<button class="btn sm" ${x.doc ? 'data-doc' : 'data-lib'}="${esc(x.id)}">${x.doc ? 'Xem SKILL.md' : 'Xem hướng dẫn đầy đủ'}</button></div>`;
     else {
       const url = /^https:\/\//.test(x.launchUrl || '') ? x.launchUrl : '';
       body = `<div class="kv2">${x.trigger ? `<span>Tự chạy khi</span><div>${esc(x.trigger)}</div>` : ''}${x.dataScope ? `<span>Dữ liệu</span><div>${esc(x.dataScope)}</div>` : ''}</div>
-        <div class="btn-row">${url && x.status !== 'Draft' ? `<a class="btn primary sm" href="${esc(url)}" target="_blank" rel="noopener">Mở trợ lý ↗</a>` : `<span class="pill-note">${x.status === 'Draft' ? 'Đang xây dựng — chưa mở cho người dùng' : 'Bản thử nghiệm — liên hệ ' + esc(U.pname(x.builderId))}</span>`}<button class="btn sm" data-lib="${esc(x.id)}">Chi tiết</button></div>`;
+        <div class="btn-row">${url && x.status !== 'Draft' ? `<a class="btn primary sm" href="${esc(url)}" target="_blank" rel="noopener">Mở trợ lý ↗</a>` : `<span class="pill-note">${x.status === 'Draft' ? 'Đang xây dựng — chưa mở cho người dùng' : 'Bản thử nghiệm — liên hệ ' + esc(U.pname(x.builderId))}</span>`}<button class="btn sm" ${x.flow ? 'data-agent' : 'data-lib'}="${esc(x.id)}">${x.flow ? 'Agent chạy thế nào' : 'Chi tiết'}</button></div>`;
     }
     return `<div class="run-tool t-${x.type}"><div class="rt-h"><span class="rt-k">${esc(k.label)} <em>${esc(k.tech)} · ${esc(x.id)}</em></span><span class="st" style="color:${stc.color};background:${stc.bg}"><i style="background:${stc.color}"></i>${esc(U.stLabel(x.status))}</span></div>
       <h4>${esc(x.name)}</h4><p>${esc(x.purpose)}</p>${body}</div>`;
@@ -90,6 +90,8 @@ AIM.views.work = (function () {
       onMount: p => p.addEventListener('click', e => {
         const c = e.target.closest('[data-copy]'); if (c) return U.copy(copies[+c.dataset.copy]);
         const lb = e.target.closest('[data-lib]'); if (lb) return AIM.lib.open(lb.dataset.lib);
+        const dc = e.target.closest('[data-doc]'); if (dc) return AIM.kb.openDoc(dc.dataset.doc);
+        const ag = e.target.closest('[data-agent]'); if (ag) return AIM.views.kbagents.open(ag.dataset.agent);
         if (e.target.closest('[data-full]')) return AIM.views.usecases.open(u.id);
         if (e.target.closest('[data-askcp]')) { U.close(); return AIM.copilot.panelOpen(u.task); }
         if (e.target.closest('[data-done]')) { H.logRun(u.id); U.close(); U.toast('Đã ghi nhận: ' + u.task); if (AIM.app.current().key === 'home') AIM.app.refresh(); }
