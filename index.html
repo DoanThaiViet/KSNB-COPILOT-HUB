@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="css/app.css?v=c2">
+<link rel="stylesheet" href="css/app.css?v=c3">
+<link rel="stylesheet" href="css/hub.css?v=c3">
 </head>
 <body>
 <header class="top">
@@ -21,21 +22,21 @@
         <div class="unit" id="unitName"></div>
       </div>
     </div>
+    <div class="hsearch" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="qs" type="search" placeholder="Tra cứu nhanh: công việc, câu lệnh, mẹo…  (Ctrl+K)" aria-label="Tra cứu nhanh" autocomplete="off" aria-expanded="false">
+    </div>
     <div class="hdtools">
-      <div class="roleswitch" id="roleswitch"></div>
-      <div class="asof" id="asof"></div>
+      <div class="who" id="who"></div>
     </div>
   </div>
 </header>
 
 <div class="shell">
   <aside class="side">
-    <div class="navlbl">Điều hành triển khai AI</div>
-    <nav class="menu" id="menu"></nav>
+    <nav class="menu" id="menu" aria-label="Điều hướng chính"></nav>
     <div class="sidefoot">
       <div class="org"><img src="assets/logo.png" alt=""><div><b>Ban Kiểm soát nội bộ</b><span>PVEP</span></div></div>
-      <input type="file" id="fileImport" accept=".json" hidden>
-      <button id="btnExport" hidden></button><button id="btnImport" hidden></button><button id="btnReset" hidden></button>
     </div>
   </aside>
   <main id="main"></main>
@@ -43,21 +44,26 @@
 
 <div class="tip" id="tip"></div>
 
-<!-- Thứ tự nạp: cấu hình → dữ liệu mẫu → tầng dữ liệu → logic → giao diện chung → từng màn hình → khởi động -->
-<script src="js/config.js?v=c2"></script>
-<script src="js/seed.js?v=c2"></script>
-<script src="js/store.js?v=c2"></script>
-<script src="js/logic.js?v=c2"></script>
-<script src="js/ui.js?v=c2"></script>
-<script src="js/views/dashboard.js?v=c2"></script>
-<script src="js/views/usecases.js?v=c2"></script>
-<script src="js/views/library.js?v=c2"></script>
-<script src="js/views/skills.js?v=c2"></script>
-<script src="js/views/agents.js?v=c2"></script>
-<script src="js/views/samples.js?v=c2"></script>
-<script src="js/views/tips.js?v=c2"></script>
-<script src="js/views/roadmap.js?v=c2"></script>
-<script src="js/views/people.js?v=c2"></script>
-<script src="js/app.js?v=c2"></script>
+<!-- Thứ tự nạp: cấu hình → dữ liệu mẫu → tầng dữ liệu → logic → giao diện chung → ngữ cảnh người dùng → từng màn hình → tra cứu/hỏi đáp → khởi động -->
+<script src="js/config.js?v=c3"></script>
+<script src="js/seed.js?v=c3"></script>
+<script src="js/store.js?v=c3"></script>
+<script src="js/logic.js?v=c3"></script>
+<script src="js/ui.js?v=c3"></script>
+<script src="js/hub.js?v=c3"></script>
+<script src="js/views/dashboard.js?v=c3"></script>
+<script src="js/views/usecases.js?v=c3"></script>
+<script src="js/views/library.js?v=c3"></script>
+<script src="js/views/skills.js?v=c3"></script>
+<script src="js/views/agents.js?v=c3"></script>
+<script src="js/views/samples.js?v=c3"></script>
+<script src="js/views/tips.js?v=c3"></script>
+<script src="js/views/roadmap.js?v=c3"></script>
+<script src="js/views/people.js?v=c3"></script>
+<script src="js/views/home.js?v=c3"></script>
+<script src="js/views/work.js?v=c3"></script>
+<script src="js/views/assistant.js?v=c3"></script>
+<script src="js/copilot.js?v=c3"></script>
+<script src="js/app.js?v=c3"></script>
 </body>
 </html>

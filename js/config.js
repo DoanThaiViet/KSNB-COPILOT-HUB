@@ -150,9 +150,35 @@ AIM.config = {
     other:   { label: 'Công cụ AI khác',     note: 'Trợ lý AI ngoài Microsoft 365' }
   },
 
+  /* Persona: cùng một app nhưng mỗi vai trò thấy trang chủ và menu khác nhau.
+     Đây là lựa chọn hiển thị trên máy (demo), KHÔNG phải xác thực/phân quyền.
+     defaultPerson: cán bộ mẫu dùng khi chưa chọn tên. */
   roles: {
-    ld: { label: 'Lãnh đạo',   canEdit: false },   // chỉ xem
-    cv: { label: 'Chuyên viên', canEdit: true }    // nhập và sửa dữ liệu
+    cv:    { label: 'Nhân sự',          short: 'Nhân sự',   canEdit: true,  governance: false, defaultPerson: 'p07',
+             note: 'Việc cần làm · AI trợ giúp · hướng dẫn ngắn' },
+    pic:   { label: 'PIC / Đầu mối',    short: 'PIC',       canEdit: true,  governance: true,  defaultPerson: 'p05',
+             note: 'Tiến độ nhóm · use case chưa triển khai · người cần hỗ trợ' },
+    ld:    { label: 'Lãnh đạo Ban',     short: 'Lãnh đạo',  canEdit: false, governance: true,  defaultPerson: 'p02', leadOnly: true,
+             note: 'Mức độ sử dụng · hiệu quả · rủi ro · việc cần quyết định' },
+    admin: { label: 'Điều phối / Admin', short: 'Điều phối', canEdit: true,  governance: true,  defaultPerson: 'p05',
+             note: 'Thư viện Prompt/Skill/Agent · dữ liệu · quản trị' }
+  },
+
+  /* Ảnh minh họa theo khu vực (16:9, không chữ). Thiếu ảnh thì tự lùi về nền gradient. */
+  visuals: {
+    home:      'assets/img/hero-command-center.webp',
+    work:      'assets/img/human-copilot.webp',
+    assistant: 'assets/img/agent-orchestration.webp',
+    knowledge: 'assets/img/document-intelligence.webp',
+    govern:    ''            // chờ ảnh "AI Adoption Journey" / "Data & Audit Intelligence"
+  },
+
+  /* Trợ lý hỏi đáp. endpoint rỗng = trả lời bằng tra cứu kho tri thức ngay trên máy (không gửi dữ liệu đi).
+     Khi có backend (Copilot Studio / Azure OpenAI qua API nội bộ): điền endpoint, nhận POST
+     { question, persona, context:[{kind,id,title,text}] } → { answer, sources:[id] }. */
+  assistant: {
+    endpoint: '',
+    copilotUrl: 'https://m365.cloud.microsoft/chat'
   },
 
   groupPalette: ['#2e3192', '#00843d', '#0a7e8c', '#E0982A', '#6b5ca5', '#3a78c2', '#8a6d3b', '#c0504d', '#4a7c59', '#7a5c8a']
