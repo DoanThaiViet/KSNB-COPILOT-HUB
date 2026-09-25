@@ -17,7 +17,7 @@ AIM.config = {
   data: {
     mode: 'local',
     storageKey: 'aim.v1',
-    schemaVersion: 14,   // 14: thêm thư viện Prompt/Skill/Agent KSNB
+    schemaVersion: 15,   // 14: thư viện Prompt/Skill/Agent KSNB · 15: Văn Kim Hoàng thuộc Lãnh đạo Ban
     rest: { baseUrl: '/api', headers: {} }
   },
 
@@ -156,12 +156,8 @@ AIM.config = {
   roles: {
     cv:    { label: 'Nhân sự',          short: 'Nhân sự',   canEdit: true,  governance: false, defaultPerson: 'p06',
              note: 'Việc cần làm · AI trợ giúp · hướng dẫn ngắn' },
-    pic:   { label: 'PIC / Đầu mối',    short: 'PIC',       canEdit: true,  governance: true,  defaultPerson: 'p05',
-             note: 'Tiến độ nhóm · use case chưa triển khai · người cần hỗ trợ' },
     ld:    { label: 'Lãnh đạo Ban',     short: 'Lãnh đạo',  canEdit: false, governance: true,  defaultPerson: 'p02', leadOnly: true,
-             note: 'Mức độ sử dụng · hiệu quả · rủi ro · việc cần quyết định' },
-    admin: { label: 'Điều phối / Admin', short: 'Điều phối', canEdit: true,  governance: true,  defaultPerson: 'p06',
-             note: 'Thư viện Prompt/Skill/Agent · dữ liệu · quản trị' }
+             note: 'Mức độ sử dụng · hiệu quả · rủi ro · việc cần quyết định' }
   },
 
   /* Ảnh minh họa theo khu vực (16:9, không chữ). Thiếu ảnh thì tự lùi về nền gradient. */

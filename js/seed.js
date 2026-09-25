@@ -26,7 +26,7 @@ AIM.seed = function () {
     P('p01', 'Nguyễn Thị Cẩm Tú',    'Trưởng ban',                          'Lãnh đạo Ban', 'Pháp lý', 1),
     P('p02', 'Đặng Ngọc Khánh',      'Phó Trưởng ban',                      'Lãnh đạo Ban', 'Tài chính', 1),
     P('p03', 'Vũ Anh Quân',          'Phó Trưởng ban',                      'Lãnh đạo Ban', 'Kế hoạch, quản lý dự án', 1),
-    P('p04', 'Văn Kim Hoàng',        'Trưởng phòng, Thư ký HĐTV',           'Phòng Tổng hợp', 'Tổng hợp'),
+    P('p04', 'Văn Kim Hoàng',        'Trưởng phòng, Thư ký HĐTV',           'Lãnh đạo Ban', 'Tổng hợp', true),
     P('p05', 'Lý Quốc Đạt',          'Chuyên viên Phân tích, Thư ký Ban',   'Phòng Phân tích', 'Pháp lý'),
     P('p06', 'Đoàn Thái Việt',       'Phó Trưởng phòng',                    'Phòng Kiểm toán nội bộ', 'Kiểm toán'),
     P('p07', 'Ngô Thị Tuấn Anh',     'Chuyên viên chính',                   'Phòng Kiểm toán nội bộ', 'Tài chính'),
