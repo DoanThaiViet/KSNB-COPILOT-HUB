@@ -137,7 +137,7 @@ AIM.lib = (function () {
     el.addEventListener('click', e => {
       const cp = e.target.closest('[data-copy]'); if (cp) { e.stopPropagation(); return U.copy(S.get('library', cp.dataset.copy).instruction); }
       if (e.target.closest('[data-add]')) return edit(null, type);
-      const c = e.target.closest('[data-id]'); if (c && c.dataset.id) return open(c.dataset.id);
+      const c = e.target.closest('[data-id]'); if (c && c.dataset.id) return AIM.lib.open(c.dataset.id);   // qua AIM.lib để dùng dạng chi tiết gọn
       const u = e.target.closest('[data-uc]'); if (u) { e.stopPropagation(); return AIM.views.usecases.open(u.dataset.uc); }
     });
   }

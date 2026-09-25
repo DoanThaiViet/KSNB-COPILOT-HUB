@@ -33,7 +33,14 @@ AIM.kb = (function () {
   }
 
   /* Dành cho tôi: cùng nhóm công việc hoặc gắn với việc tôi được giao */
-  const forMe = x => { const u = S.get('useCases', x.useCaseId); return H.myGroups().includes(x.groupId) || (u && H.isMine(u)); };
+  let meCache = { k: '', ids: new Set() };
+  /* Dành cho tôi = công cụ gắn với việc của tôi (việc chung, nhiệm vụ BM01, ứng dụng AI) hoặc cùng nhóm công việc */
+  const forMe = x => { const p = H.person(), k = p ? p.id + ':' + S.all('library').length : '';
+    if (meCache.k !== k) { meCache = { k, ids: H.myToolIds() };
+      /* Skill được Agent/Skill của tôi gọi tới cũng tính là của tôi */
+      [...meCache.ids].forEach(id => ((S.get('library', id) || {}).skills || []).forEach(s => meCache.ids.add(s))); }
+    const u = S.get('useCases', x.useCaseId);
+    return meCache.ids.has(x.id) || H.myGroups().includes(x.groupId) || !!(u && H.isMine(u)); };
   const TAGS = ['HĐTV/PYK', 'Thẩm quyền', 'Chỉ đạo', 'KTGS', 'KTNB', 'QTRR', 'Tài chính', 'Dự án dầu khí', 'Đấu thầu', 'Pháp lý/OECD', 'Thư ký HĐTV', 'Kế hoạch', 'Kỹ thuật', 'Dashboard/CĐS'];
   const GTAG = { g1: 'HĐTV/PYK', g2: 'Pháp lý/OECD', g3: 'KTGS', g4: 'KTNB', g5: 'QTRR', g6: 'Kế hoạch', g7: 'Tài chính', g8: 'Dự án dầu khí', g9: 'Đấu thầu', g10: 'Kỹ thuật' };
   const tagOf = x => x.tag || GTAG[x.groupId] || U.group(x.groupId).short;
@@ -150,20 +157,28 @@ AIM.views.kbagents = (function () {
       <div class="kb-foot"><button class="btn primary sm" data-open="${esc(x.id)}">Xem Agent chạy thế nào</button><span class="sp"></span><span class="faint">${esc(x.id)}</span></div>
     </article>`;
   }
+  /* Hộp chi tiết Agent viết cho người chưa quen: 3 ô "khi nào – làm gì – nhận được gì", rồi mới đến các bước */
   function open(id) {
     const x = S.get('library', id); if (!x) return;
     const sk = (x.skills || []).map(i => S.get('library', i)).filter(Boolean);
-    const states = x.states || Object.keys(STATES);
-    U.modal({ wide: true, title: esc(x.name), sub: `<span class="faint">${esc(x.alias || x.id)}</span>`,
-      body: `<p class="ag-what">${esc(x.purpose)}</p>
-        <h4 class="ag-h">Luồng xử lý</h4><ol class="ag-flow v">${(x.steps && x.steps.length ? x.steps : STEPS.map(s => s[0] + ': ' + s[1])).map((s, i) => { const gate = /gate/i.test(s);
-          return `<li class="${gate ? 'gate' : ''}"><span>${gate ? '🛡' : i + 1}</span><b>${esc(STEPS[i] ? STEPS[i][0] : '')}</b><small>${esc(s.replace(/^[A-Za-z ]+:\s*/, '').replace(/^./, c => c.toUpperCase()))}</small></li>`; }).join('')}</ol>
-        <h4 class="ag-h">Hồ sơ đi qua các trạng thái</h4><div class="ag-states">${states.map(s => `<span>${esc(STATES[s] || s)}</span>`).join('<i>→</i>')}</div>
-        ${sk.length ? `<h4 class="ag-h">Các Skill được gọi</h4><div class="lst">${sk.map(s => `<button class="li" data-doc="${esc(s.id)}"><span><b>${esc(s.name)}</b><small>${esc(s.id)} · ${esc(s.purpose)}</small></span><em>SKILL.md →</em></button>`).join('')}</div>` : ''}
-        ${x.guardrails ? `<h4 class="ag-h">Giới hạn</h4><p>${esc(x.guardrails)}</p>` : ''}
-        ${x.status === 'Draft' ? '<p class="note-warn">Agent chưa kết nối hệ thống nên chưa chạy tự động. Trong lúc chờ, dùng các Skill bên trên theo đúng thứ tự.</p>' : ''}`,
-      foot: `${x.doc ? '<button class="btn" data-mdoc>Xem tệp mô tả</button>' : ''}<button class="btn primary" data-close>Đóng</button>`,
-      onMount: p => p.addEventListener('click', e => { const d = e.target.closest('[data-doc]'); if (d) K.openDoc(d.dataset.doc); if (e.target.closest('[data-mdoc]')) K.openDoc(x.id); }) });
+    const steps = x.flow && x.steps && x.steps.length
+      ? x.steps.map((s, i) => ({ t: STEPS[i] ? STEPS[i][0] : '', d: s.replace(/^[A-Za-z ]+:\s*/, '').replace(/^./, c => c.toUpperCase()), gate: /gate/i.test(s) }))
+      : String(x.instruction || '').split(/\n|(?<=\.)\s+/).map(t => t.trim()).filter(Boolean).map((d, i) => ({ t: 'Bước ' + (i + 1), d, gate: /không|chỉ /i.test(d) }));
+    const box = (ic, t, v) => v ? `<div class="agx"><span>${ic}</span><b>${t}</b><p>${esc(v)}</p></div>` : '';
+    U.modal({ wide: true, title: esc(x.name), sub: x.alias ? `<span class="faint">${esc(x.alias)}</span>` : '',
+      body: `<div class="agx-row">
+          ${box('⏱', 'Khi nào chạy', x.flow ? 'Khi có một hồ sơ cần theo dõi qua nhiều bước, nhiều ngày' : x.trigger)}
+          ${box('⚙', 'Nó làm gì', x.purpose)}
+          ${box('📄', 'Bạn nhận được', x.output)}
+        </div>
+        <div class="agx-2">${x.input ? `<div><b>Bạn cần chuẩn bị</b><p>${esc(x.input)}</p></div>` : ''}
+          <div class="warn"><b>Nó KHÔNG làm</b><p>${esc(x.guardrails || 'Không tự kết luận, không phát hành. Cán bộ duyệt trước mọi điểm quan trọng.')}</p></div></div>
+        <h4 class="ag-h">Các bước</h4><ol class="ag-flow v">${steps.map((s, i) => `<li class="${s.gate ? 'gate' : ''}"><span>${s.gate ? '🛡' : i + 1}</span>${s.t ? `<b>${esc(s.t)}</b>` : ''}<small>${esc(s.d)}</small></li>`).join('')}</ol>
+        ${sk.length ? `<h4 class="ag-h">Dùng các Skill</h4><div class="lst">${sk.map(s => `<button class="li" data-doc="${esc(s.id)}"><span><b>${esc(s.name)}</b><small>${esc(s.purpose)}</small></span><em>Xem →</em></button>`).join('')}</div>` : ''}
+        ${x.status === 'Draft' || !x.launchUrl ? '<p class="note-warn">Agent chưa kết nối hệ thống nên chưa tự chạy. Trong lúc chờ, làm theo các Skill ở trên theo đúng thứ tự.</p>' : ''}`,
+      foot: `${AIM.app.canGov() && AIM.kb.legacyOpen ? '<button class="btn" data-admin>Hồ sơ quản trị</button>' : ''}${x.doc ? '<button class="btn" data-mdoc>Xem tệp mô tả</button>' : ''}<span style="flex:1"></span><button class="btn primary" data-close>Đóng</button>`,
+      onMount: p => p.addEventListener('click', e => { const d = e.target.closest('[data-doc]'); if (d) K.openDoc(d.dataset.doc);
+        if (e.target.closest('[data-mdoc]')) K.openDoc(x.id); if (e.target.closest('[data-admin]')) AIM.kb.legacyOpen(x.id); }) });
   }
   function render(el) {
     if (!st.scope) st.scope = K.initScope('agent');
@@ -176,4 +191,26 @@ AIM.views.kbagents = (function () {
     draw(); K.wire(el, 'agent', st, draw);
   }
   return { title: 'Agent', menu: 'Agent', count: () => S.all('library').filter(x => x.type === 'agent' && x.status !== 'Deprecated').length, render, open };
+})();
+
+/* Mọi nơi mở chi tiết Prompt/Skill/Agent (kể cả màn cũ) dùng dạng gọn cho người dùng;
+   Lãnh đạo vẫn mở được "Hồ sơ quản trị" (người xây dựng, rà soát, hạn, 5 tiêu chí). */
+(function () {
+  const U = AIM.ui, S = AIM.store, esc = U.esc;
+  AIM.kb.legacyOpen = AIM.lib.open;
+  function simple(x) {
+    const k = AIM.hub.kind(x.type);
+    U.modal({ wide: true, title: esc(x.name), sub: `<span>${esc(k.label)}</span>`,
+      body: `<div class="agx-row">${[['Khi nào dùng', x.purpose], ['Cần chuẩn bị', x.input], ['Kết quả', x.output]].filter(r => r[1]).map(([t, v]) => `<div class="agx"><b>${t}</b><p>${esc(v)}</p></div>`).join('')}</div>
+        ${x.type === 'skill' && (x.steps || []).length ? `<h4 class="ag-h">Các bước</h4><ol class="run-steps">${x.steps.map(t => `<li>${esc(t)}</li>`).join('')}</ol>` : ''}
+        ${x.instruction ? `<h4 class="ag-h">${x.type === 'prompt' ? 'Câu lệnh' : 'Hướng dẫn'}</h4><pre class="cp-code">${esc(x.instruction)}</pre>` : ''}`,
+      foot: `${AIM.app.canGov() ? '<button class="btn" data-admin>Hồ sơ quản trị</button>' : ''}<span style="flex:1"></span>${x.instruction ? '<button class="btn primary" data-cp>Sao chép</button>' : ''}<button class="btn" data-close>Đóng</button>`,
+      onMount: p => p.addEventListener('click', e => { if (e.target.closest('[data-cp]')) U.copy(x.instruction); if (e.target.closest('[data-admin]')) AIM.kb.legacyOpen(x.id); }) });
+  }
+  AIM.lib.open = function (id) {
+    const x = S.get('library', id); if (!x) return;
+    if (x.type === 'agent') return AIM.views.kbagents.open(id);
+    if (x.doc) return AIM.kb.openDoc(id);
+    return simple(x);
+  };
 })();

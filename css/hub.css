@@ -462,3 +462,19 @@ ol.ag-flow.v li b{min-width:110px}
 
 /* Bỏ nhãn trạng thái ở mọi màn hình (kể cả Lãnh đạo, Điều hành và hộp chi tiết) */
 .st,.pipe,select[data-f="status"],.kpi .kstack,.kpi .kstack+div{display:none!important}
+
+.run-more{margin-top:6px;font-size:12.5px}
+.run-more summary{cursor:pointer;color:var(--blue);font-weight:600}
+.run-more p{margin-top:6px;color:var(--ink);line-height:1.5}
+
+/* Hộp chi tiết dễ hiểu */
+.agx-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+.agx{background:#f5faf7;border:1px solid #d9ebe0;border-radius:12px;padding:12px 14px}
+.agx span{font-size:18px}
+.agx b{display:block;font-size:12px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.04em;margin:2px 0 4px}
+.agx p{font-size:13px;color:var(--ink);line-height:1.5}
+.agx-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.agx-2>div{background:#f6f8fb;border-radius:10px;padding:10px 12px;font-size:13px}
+.agx-2>div.warn{background:#fff7ea}
+.agx-2 b{display:block;font-size:12.5px;margin-bottom:2px}
+@media(max-width:720px){ .agx-2{grid-template-columns:1fr} }
