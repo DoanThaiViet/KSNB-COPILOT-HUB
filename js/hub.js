@@ -45,9 +45,59 @@ AIM.hub = (function () {
   };
   const kind = t => KIND[t] || KIND.prompt;
   const ready = x => x.status === 'Approved' || x.status === 'Testing';
-  const toolsFor = ucId => S().all('library')
+  const toolsFor = ucId => { const a = assignment(ucId); if (a) return a.tools.map(id => S().get('library', id)).filter(x => x && x.status !== 'Deprecated');
+    return S().all('library')
     .filter(x => x.useCaseId === ucId && x.status !== 'Deprecated')
-    .sort((a, b) => ready(b) - ready(a) || L().levelIndex(b.type) - L().levelIndex(a.type) || (b.status === 'Approved') - (a.status === 'Approved'));   // dùng được trước, cấp cao trước
+    .sort((a, b) => ready(b) - ready(a) || L().levelIndex(b.type) - L().levelIndex(a.type) || (b.status === 'Approved') - (a.status === 'Approved')); };   // dùng được trước, cấp cao trước
+
+  /* ---------- Nhiệm vụ theo chức năng (AIM.bm01) + việc chung của Ban ----------
+     Mỗi nhiệm vụ được gắn nghiệp vụ và công cụ AI theo từ khóa trong nhiệm vụ/đầu ra. */
+  const RULES = [
+    [/kiểm soát viên|NĐDPV|người đại diện/i, 'Tài chính', 'g7', ['KS-17', 'KP-17']],
+    [/(thực hiện|theo dõi)[^;]{0,20}kiến nghị/i, 'KTGS', 'g3', ['KS-06', 'KP-06']],
+    [/kiểm toán|KTNB|kiểm soát nội bộ|chốt kiểm soát/i, 'KTNB', 'g4', ['KS-07', 'KS-08', 'KS-09', 'KA-03']],
+    [/thanh tra|đoàn kiểm tra|KTGS|kiểm tra, giám sát|kiểm tra giám sát/i, 'KTGS', 'g3', ['KS-04', 'KS-05', 'KS-06', 'KA-02']],
+    [/họp HĐTV|biên bản|TBKL|Chủ tịch|thư ký/i, 'Thư ký HĐTV', 'g1', ['KS-18', 'KP-18', 'KA-08']],
+    [/tờ trình|hồ sơ trình|phiếu ý kiến|PYK/i, 'HĐTV/PYK', 'g1', ['KS-01', 'KP-01', 'KS-02']],
+    [/rủi ro|QTRR|KRI|ma trận/i, 'QTRR', 'g5', ['KS-10', 'KS-11', 'KP-10']],
+    [/đấu thầu|thương mại|bảo hiểm|hợp đồng/i, 'Đấu thầu', 'g9', ['KS-14', 'KP-14']],
+    [/VBQLNB|văn bản|quy chế|quy định|thẩm quyền|OECD|quản trị công ty/i, 'Pháp lý/OECD', 'g2', ['KS-15', 'KS-16', 'KS-02']],
+    [/nghị quyết|chỉ đạo|giao ban/i, 'Chỉ đạo', 'g1', ['KS-03', 'KP-03', 'KA-05']],
+    [/dashboard|dữ liệu|số hóa|chuyển đổi số|CNTT|đào tạo/i, 'Dashboard/CĐS', 'g6', ['KS-19', 'KP-19', 'KA-09']],
+    [/đầu tư|dự án|lô|sản lượng|kỹ thuật|mỏ/i, 'Dự án dầu khí', 'g8', ['KS-13', 'KP-13', 'KA-06']],
+    [/tài chính|nợ|vốn|quyết toán|quỹ|SXKD|kế hoạch|chi phí|lương|chiến lược/i, 'Tài chính', 'g7', ['KS-12', 'KP-12']]
+  ];
+  /* Ưu tiên tên nhiệm vụ (mệnh đề đầu); chỉ khi không khớp mới xét toàn bộ mô tả, tránh gắn nhầm do từ phụ */
+  const classify = (...texts) => { for (const t of texts) { const r = RULES.find(x => x[0].test(t)); if (r) return r; } return [null, 'Tổng hợp', 'g6', []]; };
+  /* Tên ngắn cho thẻ: mệnh đề đầu của nhiệm vụ, bỏ "Trực tiếp"/"Chủ trì" ở đầu cho gọn */
+  const shortName = t => { let x = String(t || '').split(/[;:.]/)[0].replace(/^(trực tiếp|chủ trì|tham gia)\s+/i, '');
+    x = x.charAt(0).toUpperCase() + x.slice(1); return x.length > 90 ? x.slice(0, 90).replace(/\s+\S*$/, '') + '…' : x; };
+  /* Tổ thư ký (Phòng Tổng hợp) và Thư ký HĐTV không rà soát tờ trình thay Ban */
+  const isSecretariat = p => !p || p.unit === 'Phòng Tổng hợp' || /Thư ký/i.test(p.title || '');
+  let asgCache = { key: '', list: [] };
+  function assignments() {
+    const p = person(); if (!p) return [];
+    if (asgCache.key === p.id) return asgCache.list;
+    const list = [];
+    if (!isSecretariat(p)) list.push({ id: 'CM-PYK', assign: 'common', task: 'Xem, cho ý kiến tờ trình TGĐ gửi HĐTV', groupId: 'g1', tag: 'HĐTV/PYK',
+      aiStep: 'Rà soát thẩm quyền, căn cứ, số liệu; dự thảo Phiếu ý kiến Ban KSNB.', note: 'Định mức: Lãnh đạo Ban 3 giờ/phiếu · PIC 8 giờ/phiếu',
+      tools: ['KS-01', 'KP-01', 'KS-02', 'KP-02', 'KA-01'] });
+    ((AIM.bm01 || {})[p.id] || []).forEach((x, i) => { const c = classify(shortName(x.nv), x.nv, x.out);
+      list.push({ id: 'AS-' + p.id + '-' + i, assign: 'duty', task: shortName(x.nv), full: x.nv, aiStep: x.out, groupId: c[2], tag: c[1],
+        freq: x.freq, qty: x.qty, auto: x.auto, tech: x.tech, tools: c[3] }); });
+    asgCache = { key: p.id, list };
+    return list;
+  }
+  const assignment = id => /^(CM|AS)-/.test(id || '') ? assignments().find(a => a.id === id) || null : null;
+  const findTask = id => assignment(id) || S().get('useCases', id);
+  /* Toàn bộ việc của tôi theo thứ tự ưu tiên hiển thị:
+     việc chung → nhiệm vụ theo chức năng (BM01) → ứng dụng AI được giao (hạn, ưu tiên) */
+  function allMine() {
+    const p = person(); if (!p) return [];
+    const a = assignments(), ucs = S().all('useCases').filter(u => L().owners(u).includes(p.id)).sort(prioritySort);
+    return [...a.filter(x => x.assign === 'common'), ...a.filter(x => x.assign === 'duty'), ...ucs];
+  }
+  const roleLabel = r => r === 'common' ? 'Việc chung của Ban' : r === 'duty' ? 'Nhiệm vụ theo chức năng' : '';
 
   /* Việc "cần xử lý": chưa duyệt và (sắp đến hạn/quá hạn hoặc ưu tiên Cao) */
   function needsAction(u) {
@@ -94,6 +144,6 @@ AIM.hub = (function () {
   return {
     role, roleCfg, setRole, person, setPerson, scope, setScope,
     myGroups, isMine, myTasks, groupTasks, kind, ready, toolsFor, needsAction, prioritySort,
-    logRun, myRuns, visual, firstName, gIcon
+    logRun, myRuns, visual, firstName, gIcon, assignments, assignment, findTask, roleLabel, isSecretariat, allMine
   };
 })();

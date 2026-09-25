@@ -445,3 +445,20 @@ ol.ag-flow.v li b{min-width:110px}
 .kb-tag,.kb-me,.ag-st{white-space:nowrap}
 .ag-trig{font-size:12.5px;color:var(--muted);background:#f6f8fb;border-radius:8px;padding:7px 10px}
 .ag-trig b{color:var(--ink)}
+
+/* Vai trò trong nhiệm vụ */
+.tk-role{font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 9px;white-space:nowrap;background:#e3f3e9;color:#00843d}
+.tk-role.r-HT{background:#eef1f5;color:var(--muted)}
+.tk-role.r-LD{background:var(--blue-l);color:var(--blue)}
+.tk-role.r-common{background:#fdf3e1;color:#9a6512}
+.tk-role.r-uc{background:#e6f4f5;color:#0a7e8c}
+.tk-role.r-duty{background:#e3f3e9;color:#00843d}
+.tk-freq{font-size:11.5px;color:var(--muted);background:#f1f4f8;border-radius:20px;padding:2px 9px;white-space:nowrap}
+
+/* Không hiển thị trạng thái Thử nghiệm/Đã duyệt ở Kho tri thức và Trợ lý AI (vẫn giữ ở mục Điều hành) */
+.v-prompts .pipe,.v-prompts .st,.v-prompts select[data-f="status"],
+.v-skills .pipe,.v-skills .st,.v-skills select[data-f="status"],
+.v-agents .pipe,.v-agents .st,.v-agents select[data-f="status"],.v-agents .kpis{display:none!important}
+
+/* Bỏ nhãn trạng thái ở mọi màn hình (kể cả Lãnh đạo, Điều hành và hộp chi tiết) */
+.st,.pipe,select[data-f="status"],.kpi .kstack,.kpi .kstack+div{display:none!important}

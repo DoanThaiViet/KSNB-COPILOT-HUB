@@ -21,7 +21,7 @@ AIM.views.assistant = (function () {
         <section class="card-blk">
           <div class="blk-h"><div><h3>Trợ lý & quy trình cho việc của bạn</h3><p>Ưu tiên công cụ gắn với công việc được giao</p></div></div>
           <div class="lst">${helpers.slice(0, 7).map(x => { const k = H.kind(x.type); const mine = mineIds.has(x.useCaseId);
-            return `<button class="li" data-lib="${esc(x.id)}"><span class="ah-ic t-${x.type}" aria-hidden="true">${AIM.icons[x.type + 's']}</span><span><b>${esc(x.name)}</b><small>${esc(k.label)} · ${esc(U.stLabel(x.status))}${mine ? ' · <u>việc của bạn</u>' : ''}</small></span><em>→</em></button>`; }).join('')}</div>
+            return `<button class="li" data-lib="${esc(x.id)}"><span class="ah-ic t-${x.type}" aria-hidden="true">${AIM.icons[x.type + 's']}</span><span><b>${esc(x.name)}</b><small>${esc(k.label)}${mine ? ' · <u>việc của bạn</u>' : ''}</small></span><em>→</em></button>`; }).join('')}</div>
         </section>
       </div>`;
     el.addEventListener('submit', e => { if (e.target.id === 'asF') { e.preventDefault(); const q = U.$('#asQ', el).value.trim(); if (q) { AIM.copilot.panelOpen(q); U.$('#asQ', el).value = ''; } } });

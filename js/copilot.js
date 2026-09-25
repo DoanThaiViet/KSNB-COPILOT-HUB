@@ -69,8 +69,8 @@ AIM.copilot = (function () {
       const tt = toks(title), xt = toks(text);
       docs.push({ kind, id, title, sub, nt: norm(title), nx: norm(title + ' ' + sub + ' ' + text), tt: new Set(tt), xt: new Set(xt), bg: new Set(bigrams([...tt, ...xt])) });
     };
-    S.all('useCases').forEach(u => add('task', u.id, u.task, U.group(u.groupId).name + ' · ' + U.stLabel(u.status), [u.pain, u.aiStep, u.next, u.current].join(' ')));
-    S.all('library').filter(x => x.status !== 'Deprecated').forEach(x => add('tool', x.id, x.name, H.kind(x.type).label + ' · ' + x.id + ' · ' + U.stLabel(x.status), [x.purpose, x.input, x.output, x.instruction, (x.steps || []).join(' ')].join(' ')));
+    S.all('useCases').forEach(u => add('task', u.id, u.task, U.group(u.groupId).name, [u.pain, u.aiStep, u.next, u.current].join(' ')));
+    S.all('library').filter(x => x.status !== 'Deprecated').forEach(x => add('tool', x.id, x.name, H.kind(x.type).label + ' · ' + x.id, [x.purpose, x.input, x.output, x.instruction, (x.steps || []).join(' ')].join(' ')));
     S.all('tips').forEach(t => add('tip', t.id, t.title, (C.tipAreas.find(a => a[0] === t.area) || [, ''])[1], [t.why, (t.how || []).join(' '), t.sample, t.avoid].join(' ')));
     ((AIM.views.samples || {}).samples || []).forEach(s => add('sample', s.id, s.title, s.madeBy, [s.source, s.time].join(' ')));
     S.all('people').forEach(p => add('person', p.id, p.name, p.title + (p.unit ? ' · ' + p.unit : ''), (p.groups || []).map(g => U.group(g).name).join(' ')));
@@ -159,12 +159,11 @@ Yêu cầu:
     let html = '';
     if (main.kind === 'tool') {
       const x = S.get('library', main.id), k = H.kind(x.type), uc = S.get('useCases', x.useCaseId);
-      html = `<p>Phù hợp nhất: <b>${esc(k.label)}</b> “${esc(x.name)}” <span class="faint">(${esc(x.id)} · ${esc(U.stLabel(x.status))})</span>.</p>
+      html = `<p>Phù hợp nhất: <b>${esc(k.label)}</b> “${esc(x.name)}” <span class="faint">(${esc(x.id)})</span>.</p>
         <p>${esc(x.purpose)}</p>
         ${x.input ? `<p><b>Cần chuẩn bị:</b> ${esc(x.input)}</p>` : ''}${x.output ? `<p><b>Kết quả:</b> ${esc(x.output)}</p>` : ''}
         ${x.type === 'prompt' && x.instruction ? `<div class="cp-code">${esc(clip(x.instruction, 420))}</div>` : ''}
         ${x.type !== 'prompt' && (x.steps || []).length ? `<ol>${x.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
-        ${x.status !== 'Approved' ? `<p class="cp-warn">Nội dung đang ở trạng thái ${esc(U.stLabel(x.status).toLowerCase())}: dùng thử và đối chiếu kỹ kết quả.</p>` : ''}
         <div class="cp-acts">${x.type === 'prompt' ? copyBtn(x.instruction) : ''}${uc ? actBtn(['task', uc.id, 'Thực hiện công việc này']) : ''}${actBtn(['tool', x.id, 'Xem chi tiết'])}</div>`;
     } else if (main.kind === 'task') {
       const u = S.get('useCases', main.id), tools = H.toolsFor(u.id);

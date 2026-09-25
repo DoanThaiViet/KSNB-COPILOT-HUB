@@ -191,7 +191,7 @@ AIM.views.prompts = (function () {
     if (pk !== lastPk) { lastPk = pk; if (params && params.q) f = { ...f, q: params.q }; }
     const all = S.all('library').filter(x => x.type === 'prompt');
     el.innerHTML = `
-      <div class="phd"><div><h2>Thư viện Prompt</h2><div class="meta">${all.length} prompt · ${all.filter(x => x.status === 'Approved').length} đã duyệt</div></div>
+      <div class="phd"><div><h2>Thư viện Prompt</h2><div class="meta">${all.length} prompt</div></div>
         <div class="acts"><button class="btn primary edit-only" data-add>+ Thêm Prompt</button></div></div>
       ${LIB.pipeline(all)}
       ${LIB.filterBar('prompt', f)}

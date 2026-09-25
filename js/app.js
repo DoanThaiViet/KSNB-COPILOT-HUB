@@ -20,7 +20,7 @@ AIM.app = (function () {
       tabs: [['knowledge', 'Tra cứu nhanh'], ['prompts', 'Prompt'], ['kbskills', 'Skill'], ['kbagents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']],
       /* Mục con hiện ngay dưới menu để biết kho gồm những gì */
       sub: [['prompts', 'Prompt'], ['kbskills', 'Skill'], ['kbagents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']] },
-    { key: 'govern', label: 'Điều hành', gov: true, desc: 'Mức độ sử dụng, hiệu quả, lộ trình và nhân sự — dành cho Lãnh đạo, PIC và điều phối.',
+    { key: 'govern', label: 'Điều hành', gov: true, desc: 'Mức độ sử dụng, hiệu quả, lộ trình và nhân sự — dành cho Lãnh đạo Ban.',
       tabs: [['dashboard', 'Tổng quan triển khai'], ['roadmap', 'Lộ trình'], ['people', 'Nhân sự & mức độ tham gia']] }
   ];
   const KEYWORDS = { kbskills: 'skill quy trinh sop skill.md', kbagents: 'agent tro ly tu dong la gi', usecases: 'use case danh sach', prompts: 'prompt thu vien cau lenh', agents: 'agent tro ly', skills: 'skill quy trinh', tips: 'meo tips', dashboard: 'kpi thong ke bao cao', roadmap: 'lo trinh ke hoach', people: 'can bo nhan su adoption' };
@@ -74,22 +74,24 @@ AIM.app = (function () {
     const pool = AIM.store.all('people').filter(x => !C.roles[r].leadOnly || x.isLead);
     const b = $('#whoBtn'); b && b.setAttribute('aria-expanded', 'true');
     AIM.ui.modal({
-      title: 'Không gian làm việc', sub: '<span>Chọn vai trò để thấy đúng việc của mình. Đây là tùy chọn hiển thị trên máy này, không phải phân quyền.</span>',
+      title: 'Không gian làm việc', sub: '<span>Bấm vai trò hoặc tên cán bộ để chuyển ngay. Đây là tùy chọn hiển thị trên máy này, không phải phân quyền.</span>',
       body: `<div class="persona-grid">${Object.entries(C.roles).map(([k, v]) => `<button class="persona${k === r ? ' on' : ''}" data-persona="${k}" aria-pressed="${k === r}">
           <b>${esc(v.label)}</b><small>${esc(v.note)}</small></button>`).join('')}</div>
-        <div class="who-pick"><div class="who-pick-h"><b>Chọn cán bộ${C.roles[r].leadOnly ? ' (Lãnh đạo Ban)' : ''}</b>
+        <div class="who-pick"><div class="who-pick-h"><b>Cán bộ · ${esc(C.roles[r].label)}${C.roles[r].leadOnly ? ' (chỉ Lãnh đạo Ban)' : ''}</b>
           <input type="search" id="whoQ" placeholder="Gõ tên hoặc phòng…" aria-label="Tìm cán bộ" autocomplete="off"></div>
           <div class="who-list" id="whoList" role="listbox" aria-label="Cán bộ">${pool.map(x => `<button class="who-i${p && x.id === p.id ? ' on' : ''}" data-pid="${x.id}" role="option" aria-selected="${!!(p && x.id === p.id)}"
             data-key="${esc(AIM.copilot.norm(x.name + ' ' + x.title + ' ' + (x.unit || '')))}"><span class="av">${esc(AIM.ui.initials(x.name))}</span>
             <span><b>${esc(x.name)}</b><small>${esc(x.title)}${x.unit ? ' · ' + esc(x.unit) : ''}</small></span></button>`).join('')}</div></div>`,
       foot: '<button class="btn primary" data-close>Xong</button>',
       onMount: pn => {
-        pn.addEventListener('click', e => { const k = e.target.closest('[data-persona]'); if (k) { setRole(k.dataset.persona); openIdentity(); } });
+        /* Bấm là chuyển ngay: đóng hộp thoại rồi vẽ lại trang (không mở lại hộp thoại gây trễ) */
+        const apply = () => { AIM.ui.close(); window.scrollTo(0, 0); const q = H.person();
+          AIM.ui.toast(C.roles[H.role()].label + (q ? ' · ' + q.name : '')); };
         pn.addEventListener('click', e => {
-          const w = e.target.closest('[data-pid]'); if (!w) return;
-          H.setPerson(w.dataset.pid); renderIdentity(); render();
-          AIM.ui.$$('.who-i', pn).forEach(x => { const on = x === w; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); });
-          AIM.ui.toast('Đang xem với tư cách: ' + w.querySelector('b').textContent);
+          const k = e.target.closest('.persona[data-persona]');
+          if (k) { if (k.dataset.persona !== H.role()) setRole(k.dataset.persona); return apply(); }
+          const w = e.target.closest('[data-pid]');
+          if (w) { H.setPerson(w.dataset.pid); renderIdentity(); render(); return apply(); }
         });
         pn.addEventListener('input', e => { if (e.target.id !== 'whoQ') return; const q = AIM.copilot.norm(e.target.value);
           AIM.ui.$$('.who-i', pn).forEach(x => { x.hidden = !!q && !x.dataset.key.includes(q); }); });
@@ -100,7 +102,7 @@ AIM.app = (function () {
   function setRole(r) {
     H.setRole(r);
     document.body.classList.toggle('ro', !canEdit());
-    document.body.dataset.persona = H.role();
+    document.body.dataset.view = H.role();   // không dùng data-persona trên body: trùng với nút chọn vai trò
     renderIdentity();
     if (sectionOf(current.key).gov && !canGov()) go('home'); else render();
   }
@@ -116,7 +118,7 @@ AIM.app = (function () {
   function render() {
     current = parseHash();
     let sec = sectionOf(current.key);
-    if (sec.gov && !canGov()) { current = { key: 'home', params: {} }; sec = SECTIONS[0]; history.replaceState(null, '', '#/home'); AIM.ui.toast('Mục Điều hành dành cho Lãnh đạo, PIC và điều phối'); }
+    if (sec.gov && !canGov()) { current = { key: 'home', params: {} }; sec = SECTIONS[0]; history.replaceState(null, '', '#/home'); AIM.ui.toast('Mục Điều hành dành cho Lãnh đạo Ban'); }
     renderMenu();
     const el = $('#main');
     el.innerHTML = '';

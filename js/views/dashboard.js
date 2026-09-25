@@ -21,7 +21,7 @@ AIM.views.dashboard = (function () {
         <div class="tri">${Object.keys(t).map(k => `<div><b style="color:${t[k].color}">${sm.byType[k]}</b><span>${t[k].label}</span></div>`).join('')}</div>
         <div class="s">Không tính mục đã ngừng dùng</div></div>
       <div class="kpi"><div class="l">Thời gian tiết kiệm ước tính</div><div class="v">${nf(sm.saved)}<small> giờ/tháng</small></div>
-        <div class="s" data-tip="Chỉ tính ứng dụng AI đã duyệt">Đã duyệt: <b>${nf(sm.savedApproved)} giờ/tháng</b></div></div>
+        <div class="s">Ước tính theo khai báo của đầu mối</div></div>
       <div class="kpi go" data-nav="roadmap"><div class="l">Tỷ lệ hoàn thành kế hoạch</div><div class="v">${pct(sm.plan.actual)}</div>
         <div class="s">${U.bar(sm.plan.actual, 'linear-gradient(90deg,#006838,#00a651)', sm.plan.planned)}
         <div style="margin-top:5px">Kế hoạch đến nay: <b>${pct(sm.plan.planned)}</b></div></div></div>
@@ -58,18 +58,18 @@ AIM.views.dashboard = (function () {
     return `<div class="typebox">${d}<div class="typelist">${keys.map(k => {
       const items = lib.filter(x => x.type === k);
       return `<div class="row" data-nav="${k === 'prompt' ? 'prompts' : k + 's'}"><b>${T[k].label}</b>
-        <div class="sbt">${sts.map(s => { const n = items.filter(x => x.status === s).length; return n ? `<i style="width:${n / max * 100}%;background:${C.statuses[s].color}" data-tip="${T[k].label} · ${U.stLabel(s)}: ${n}"></i>` : ''; }).join('')}</div>
+        <div class="sbt">${items.length ? `<i style="width:${items.length / max * 100}%;background:${T[k].color}" data-tip="${T[k].label}: ${items.length}"></i>` : ''}</div>
         <span style="text-align:right;font-weight:700">${items.length}</span></div>`;
-    }).join('')}</div></div>` + U.legend(sts.map(s => ({ name: U.stLabel(s), color: C.statuses[s].color })));
+    }).join('')}</div></div>`;
   }
 
   function byGroup() {
     const ucs = S.all('useCases');
     const rows = S.all('groups').map(g => ({
       label: g.name, attrs: `data-nav="usecases?group=${g.id}"`,
-      parts: C.useCaseStatuses.map(s => ({ v: ucs.filter(u => u.groupId === g.id && u.status === s).length, color: C.statuses[s].color, name: U.stLabel(s) }))
+      parts: [{ v: ucs.filter(u => u.groupId === g.id).length, color: '#00843d', name: 'Ứng dụng AI' }]
     }));
-    return U.stackBars(rows, { labelWidth: 170, unit: 'ứng dụng AI' }) + U.legend(C.useCaseStatuses.map(s => ({ name: U.stLabel(s), color: C.statuses[s].color })));
+    return U.stackBars(rows, { labelWidth: 170, unit: 'ứng dụng AI' });
   }
 
   function top() {
@@ -77,7 +77,7 @@ AIM.views.dashboard = (function () {
     const rows = ucs.map(u => ({
       label: u.task, sub: U.group(u.groupId).short + ' · ' + U.hrs(u.before) + ' → ' + U.hrs(u.after) + ' giờ/lần · ' + C.frequencies[u.freq].label.toLowerCase(),
       attrs: `data-uc="${u.id}"`,
-      parts: [{ v: L.savedHours(u), color: u.status === 'Approved' ? '#00843d' : u.status === 'Testing' ? '#E0982A' : '#94a3b8', name: 'Tiết kiệm (' + U.stLabel(u.status) + ')' }],
+      parts: [{ v: L.savedHours(u), color: '#00843d', name: 'Tiết kiệm' }],
       valueLabel: nf(L.savedHours(u), 1)
     }));
     return U.stackBars(rows, { labelWidth: 250, fmt: v => nf(v, 1), unit: 'giờ/tháng' });
@@ -87,7 +87,7 @@ AIM.views.dashboard = (function () {
     const ucs = S.all('useCases');
     const rows = Object.entries(C.tools).map(([k, t]) => ({
       label: t.label, attrs: `data-nav="usecases?tool=${k}"`,
-      parts: C.useCaseStatuses.map(s => ({ v: ucs.filter(u => u.tool === k && u.status === s).length, color: C.statuses[s].color, name: U.stLabel(s) }))
+      parts: [{ v: ucs.filter(u => u.tool === k).length, color: '#00843d', name: 'Ứng dụng AI' }]
     })).filter(r => r.parts.some(p => p.v > 0));
     return U.stackBars(rows, { labelWidth: 190, unit: 'ứng dụng AI' });
   }

@@ -22,9 +22,9 @@ AIM.views.home = (function () {
       usage: surveyed.length
         ? { v: pct(active.length / ppl.length * 100), s: `${active.length}/${ppl.length} cán bộ dùng hằng ngày/hằng tuần`, tip: 'Theo khảo sát mức độ sử dụng Copilot' }
         : { v: 'Chưa khảo sát', s: `Tạm tính: ${withUc}/${ppl.length} cán bộ đã được giao ứng dụng AI (${pct(withUc / (ppl.length || 1) * 100)})`, warn: true, tip: 'Chưa có số liệu khảo sát mức độ sử dụng. Chỉ số tạm tính là tỷ lệ cán bộ đã được giao ít nhất một ứng dụng AI, không phản ánh tần suất dùng.' },
-      running: { v: approved.length, s: `+${ucs.filter(u => u.status === 'Testing').length} thử nghiệm · ${ucs.filter(u => u.status === 'Draft').length} dự thảo`, tip: 'Ứng dụng AI đã duyệt, đang dùng trong công việc' },
+      running: { v: approved.length, s: `trên tổng ${ucs.length} use case của Ban`, tip: 'Ứng dụng AI đã duyệt, đang dùng trong công việc' },
       hours: { v: nf(approved.reduce((a, u) => a + L.savedHours(u), 0)), unit: 'giờ/tháng', s: `Tiềm năng khi triển khai hết: ${nf(ucs.reduce((a, u) => a + L.savedHours(u), 0))} giờ/tháng`, tip: '(giờ trước − giờ sau) × số lần/tháng, chỉ cộng ứng dụng AI đã duyệt. Số khai báo, là ước tính.' },
-      runs: { v: nf(approved.reduce((a, u) => a + (+u.perMonth || 0), 0)), unit: 'lượt/tháng', s: 'Lượt công việc có AI hỗ trợ (ứng dụng đã duyệt)', tip: 'Tổng số lần thực hiện/tháng của các ứng dụng AI đã duyệt' }
+      runs: { v: nf(approved.reduce((a, u) => a + (+u.perMonth || 0), 0)), unit: 'lượt/tháng', s: 'Lượt công việc có AI hỗ trợ mỗi tháng', tip: 'Tổng số lần thực hiện/tháng của các ứng dụng AI đã duyệt' }
     };
   }
   function kpis(compact) {
@@ -42,11 +42,11 @@ AIM.views.home = (function () {
   /* ---------- Thẻ công việc ---------- */
   function tile(u) {
     const g = U.group(u.groupId), tools = H.toolsFor(u.id), d = L.dueState(u.deadline, u.status === 'Approved');
-    const best = tools.find(H.ready), building = !best && tools.length;
+    const best = tools[0];
     return `<article class="tk" style="--c:${g.color}">
       <div class="tk-ic" aria-hidden="true">${H.gIcon(u.groupId)}</div>
       <div class="tk-b"><h4>${esc(u.task)}</h4><p>${esc(clip(u.aiStep, 92))}</p>
-        <div class="tk-m">${U.status(u.status)}${d ? `<span class="tk-due ${d.key}">${esc(d.label)}</span>` : ''}${best ? `<span class="tk-tool">${esc(H.kind(best.type).label)}</span>` : building ? '<span class="tk-tool off">Công cụ đang xây</span>' : ''}</div></div>
+        <div class="tk-m">${u.assign === 'common' ? '<span class="tk-role r-common">Việc chung của Ban</span>' : u.assign ? `<span class="tk-role r-duty">${esc(u.tag)}</span>${u.freq ? `<span class="tk-freq">${esc(u.freq)}</span>` : ''}` : '<span class="tk-role r-uc">Ứng dụng AI được giao</span>'}${d ? `<span class="tk-due ${d.key}">${esc(d.label)}</span>` : ''}${best ? `<span class="tk-tool">${esc(H.kind(best.type).label)}</span>` : ''}</div></div>
       <button class="btn primary sm tk-go" data-run="${esc(u.id)}" aria-label="Thực hiện: ${esc(u.task)}">Thực hiện</button>
     </article>`;
   }
@@ -55,21 +55,22 @@ AIM.views.home = (function () {
   /* ---------- Gợi ý AI chủ động ---------- */
   function recs(tasks, max = 3) {
     const out = [], seen = new Set();
-    tasks.filter(u => u.status !== 'Approved').concat(tasks.filter(u => u.status === 'Approved')).forEach(u => {
-      H.toolsFor(u.id).filter(x => x.type !== 'prompt' && H.ready(x)).forEach(x => {
+    /* Ưu tiên Skill (cách làm chuẩn) gắn với việc; bỏ qua Agent còn ở mức thiết kế */
+    tasks.forEach(u => {
+      H.toolsFor(u.id).filter(x => x.type !== 'prompt' && x.status !== 'Draft').forEach(x => {
         if (seen.has(x.id) || out.length >= max) return; seen.add(x.id);
-        out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `${esc(H.kind(x.type).label)} <b>${esc(x.name)}</b>`, note: x.status === 'Testing' ? 'bản thử nghiệm' : 'đã duyệt' });
+        out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `${esc(H.kind(x.type).label.toLowerCase())} <b>${esc(x.name)}</b>` });
       });
     });
     tasks.forEach(u => {
       if (out.length >= max) return;
-      const x = H.toolsFor(u.id).find(t => t.type === 'prompt' && t.status === 'Approved');
-      if (x && !seen.has(x.id)) { seen.add(x.id); out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `câu lệnh mẫu <b>${esc(x.name)}</b>`, note: 'đã duyệt' }); }
+      const x = H.toolsFor(u.id).find(t => t.type === 'prompt');
+      if (x && !seen.has(x.id)) { seen.add(x.id); out.push({ u, x, why: `Bạn đang làm <b>${esc(u.task)}</b>`, what: `câu lệnh mẫu <b>${esc(x.name)}</b>` }); }
     });
     if (!out.length) return '';
     return `<div class="recs" style="--img:url('${esc(H.visual('assistant'))}')">
       <div class="recs-h"><span class="cp-orb" aria-hidden="true"></span><div><h3>Gợi ý cho bạn</h3><p>AI đề xuất công cụ phù hợp với việc đang làm</p></div></div>
-      <div class="recs-l">${out.map(r => `<button class="rec" data-run="${esc(r.u.id)}"><span>${r.why}</span><span class="rec-arrow">→ thử ${r.what}</span><small>${esc(r.note)}</small></button>`).join('')}</div></div>`;
+      <div class="recs-l">${out.map(r => `<button class="rec" data-run="${esc(r.u.id)}"><span>${r.why}</span><span class="rec-arrow">→ thử ${r.what}</span></button>`).join('')}</div></div>`;
   }
 
   /* ---------- Hero ---------- */
@@ -98,9 +99,9 @@ AIM.views.home = (function () {
 
   function workBlock(mine, title) {
     const hub = H.scope() === 'hub';
-    const list = hub ? featured() : [...mine].sort(H.prioritySort).slice(0, 6);
+    const list = hub ? featured() : mine.slice(0, 6);   // mine đã xếp theo thứ tự ưu tiên (H.allMine)
     return `<section class="blk" id="myWork">${head(hub ? 'Công việc tiêu biểu toàn Hub' : title,
-        hub ? 'Ứng dụng AI đã duyệt/thử nghiệm, xếp theo giờ tiết kiệm' : `${mine.length} việc được giao · xếp theo hạn và mức ưu tiên`,
+        hub ? 'Ứng dụng AI xếp theo giờ tiết kiệm' : `${mine.length} việc · việc chung của Ban, ứng dụng AI được giao và nhiệm vụ theo phân công`,
         `<div class="blk-acts">${scopeSeg()}<button class="btn sm ghost" data-nav="work${hub ? '?scope=hub' : ''}">Xem tất cả →</button></div>`)}
       ${list.length ? tiles(list) : `<div class="empty-note">Chưa có công việc được giao cho cán bộ này. <button class="linkish" data-scope="hub">Xem công việc tiêu biểu toàn Hub</button></div>`}</section>`;
   }
@@ -109,14 +110,14 @@ AIM.views.home = (function () {
 
   /* ================= Persona: Nhân sự ================= */
   function staff(el, p) {
-    const mine = H.myTasks().filter(u => L.owners(u).includes(p.id));
-    const need = mine.filter(H.needsAction);
-    const helpers = S.all('library').filter(x => H.ready(x) && mine.some(u => u.id === x.useCaseId));   // công cụ đã dùng được (duyệt/thử nghiệm) gắn với việc của tôi
-    const runs = H.myRuns(), recent = Object.keys(runs).map(id => S.get('useCases', id)).filter(Boolean).slice(0, 4);
+    const mine = H.allMine(), ucs = mine.filter(u => !u.assign);
+    const need = ucs.filter(H.needsAction);
+    const helpers = new Set(mine.flatMap(u => H.toolsFor(u.id).filter(x => x.status !== 'Draft').map(x => x.id)));   // công cụ dùng được cho việc của tôi
+    const runs = H.myRuns(), recent = Object.keys(runs).map(H.findTask).filter(Boolean).slice(0, 4);
     el.innerHTML = hero(p,
-      `Hôm nay có <b>${need.length}</b> công việc cần xử lý · <b>${helpers.length}</b> công cụ AI sẵn sàng hỗ trợ`,
+      `Bạn có <b>${mine.length}</b> nhiệm vụ · <b>${need.length}</b> việc sắp đến hạn · <b>${helpers.size}</b> công cụ AI hỗ trợ`,
       cta('<span>▶</span> Bắt đầu một công việc', 'data-start', 'primary') + cta('✦ Hỏi Copilot', 'data-ask') + cta('Xem công việc của tôi', 'data-nav="work"'),
-      asideStat(nf(myHours(mine)) + '<small> giờ/tháng</small>', 'Tiết kiệm ước tính của tôi', `${mine.filter(u => u.status === 'Approved').length}/${mine.length} việc đã có AI chính thức`))
+      asideStat(nf(myHours(ucs)) + '<small> giờ/tháng</small>', 'Tiết kiệm ước tính của tôi', `từ ${ucs.length} ứng dụng AI được giao`))
     + workBlock(mine, 'Công việc của tôi')
     + recs(mine)
     + (recent.length ? `<section class="blk">${head('Tiếp tục gần đây', 'Những việc bạn đã thực hiện với AI trên máy này')}<div class="chips">${recent.map(u => `<button class="chip" data-run="${u.id}">${esc(u.task)}<em>${runs[u.id]} lần</em></button>`).join('')}</div></section>` : '')
@@ -148,8 +149,7 @@ AIM.views.home = (function () {
     + `<div class="grid2">
         <section class="blk card-blk" id="team">${head('Tiến độ nhóm', 'Theo trạng thái ứng dụng AI · bấm để lọc')}${U.stackBars(H.myGroups().map(gid => ({
           label: U.group(gid).name, attrs: `data-nav="usecases?group=${gid}"`,
-          parts: C.useCaseStatuses.map(s => ({ v: S.all('useCases').filter(u => u.groupId === gid && u.status === s).length, color: C.statuses[s].color, name: U.stLabel(s) })) })), { labelWidth: 160, unit: 'use case' })}
-          ${U.legend(C.useCaseStatuses.map(s => ({ name: U.stLabel(s), color: C.statuses[s].color })))}</section>
+          parts: [{ v: S.all('useCases').filter(u => u.groupId === gid).length, color: '#00843d', name: 'Use case' }] })), { labelWidth: 160, unit: 'use case' })}</section>
         <section class="blk card-blk">${head('Use case chưa triển khai', `${drafts.length} việc còn ở dự thảo`)}
           <div class="lst">${drafts.slice(0, 6).map(u => `<button class="li" data-uc="${u.id}"><span><b>${esc(u.task)}</b><small>${esc(U.group(u.groupId).short)} · ${esc(u.next || 'Chưa có bước tiếp theo')}</small></span>${U.prio(u.priority)}</button>`).join('') || '<div class="empty-note">Không còn use case dự thảo.</div>'}</div></section>
       </div>
@@ -178,7 +178,7 @@ AIM.views.home = (function () {
       over.length && { lv: 'high', t: `${over.length} ứng dụng AI quá hạn`, s: over.slice(0, 2).map(u => u.task).join(' · '), nav: 'usecases' },
       ms.length && { lv: ms.some(r => r.st.key === 'late') ? 'high' : 'med', t: `${ms.length} mốc lộ trình chậm`, s: ms.map(r => r.m.name + ' (' + r.st.label.toLowerCase() + ')').join(' · '), nav: 'roadmap' },
       mism.length && { lv: 'med', t: `${mism.length} Agent đang xây khi chưa đủ tiêu chí`, s: 'Rủi ro đầu tư tự động hóa khi quy trình chưa ổn định', nav: 'agents' },
-      noRev && { lv: 'med', t: `${noRev} nội dung thử nghiệm chưa có người rà soát`, s: 'Thiếu kiểm soát 4 mắt trước khi dùng rộng', nav: 'prompts' }
+      noRev && { lv: 'med', t: `${noRev} nội dung chưa có người rà soát`, s: 'Thiếu kiểm soát 4 mắt trước khi dùng rộng', nav: 'prompts' }
     ].filter(Boolean);
     const top = [...ucs].sort((a, b) => L.savedHours(b) - L.savedHours(a)).slice(0, 5);
     const maxH = Math.max(1, ...top.map(L.savedHours));
@@ -196,7 +196,7 @@ AIM.views.home = (function () {
       </div>
       <div class="grid2">
         <section class="blk card-blk">${head('Top use case hiệu quả', 'Giờ tiết kiệm ước tính/tháng')}
-          <div class="topl">${top.map((u, i) => `<button class="tl" data-uc="${u.id}"><b>${i + 1}</b><span>${esc(u.task)}<small>${esc(U.group(u.groupId).short)} · ${esc(U.stLabel(u.status))}</small></span><i><u style="width:${L.savedHours(u) / maxH * 100}%"></u></i><em>${nf(L.savedHours(u), 1)}</em></button>`).join('')}</div></section>
+          <div class="topl">${top.map((u, i) => `<button class="tl" data-uc="${u.id}"><b>${i + 1}</b><span>${esc(u.task)}<small>${esc(U.group(u.groupId).short)}</small></span><i><u style="width:${L.savedHours(u) / maxH * 100}%"></u></i><em>${nf(L.savedHours(u), 1)}</em></button>`).join('')}</div></section>
         <section class="blk card-blk">${head('Mức độ tham gia theo nhóm', 'Cán bộ đã được giao ứng dụng AI / thành viên nhóm')}
           ${U.stackBars(S.all('groups').map(g => { const mem = S.all('people').filter(x => (x.groups || []).includes(g.id)); const n = mem.filter(x => L.hasUseCase(x.id)).length;
             return { label: g.name, attrs: `data-nav="people?group=${g.id}"`, parts: [{ v: n, color: '#00843d', name: 'Đã tham gia' }, { v: mem.length - n, color: '#dfe5ec', name: 'Chưa tham gia' }], valueLabel: `${n}/${mem.length}` }; }), { labelWidth: 150, unit: 'người' })}</section>
