@@ -224,7 +224,7 @@ AIM.views.samples = (function () {
     </div>`;
   }
 
-  const samples = [deckKTGS, deckGiaoBan, dash, brand];
+  const samples = [deckKTGS, brand, dash, deckGiaoBan];   // Bộ nhận diện đưa lên vị trí thứ 2 (thay chỗ Slide họp giao ban)
   let cur = 0;
 
   /* ================= vẽ từng loại trang ================= */
