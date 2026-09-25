@@ -22,9 +22,9 @@ AIM.views.home = (function () {
       usage: surveyed.length
         ? { v: pct(active.length / ppl.length * 100), s: `${active.length}/${ppl.length} cán bộ dùng hằng ngày/hằng tuần`, tip: 'Theo khảo sát mức độ sử dụng Copilot' }
         : { v: 'Chưa khảo sát', s: `Tạm tính: ${withUc}/${ppl.length} cán bộ đã được giao ứng dụng AI (${pct(withUc / (ppl.length || 1) * 100)})`, warn: true, tip: 'Chưa có số liệu khảo sát mức độ sử dụng. Chỉ số tạm tính là tỷ lệ cán bộ đã được giao ít nhất một ứng dụng AI, không phản ánh tần suất dùng.' },
-      running: { v: approved.length, s: `+${ucs.filter(u => u.status === 'Testing').length} thử nghiệm · ${ucs.filter(u => u.status === 'Draft').length} dự thảo`, tip: 'Ứng dụng AI đã duyệt, đang dùng trong công việc' },
+      running: { v: approved.length, s: `trên tổng ${ucs.length} use case của Ban`, tip: 'Ứng dụng AI đã duyệt, đang dùng trong công việc' },
       hours: { v: nf(approved.reduce((a, u) => a + L.savedHours(u), 0)), unit: 'giờ/tháng', s: `Tiềm năng khi triển khai hết: ${nf(ucs.reduce((a, u) => a + L.savedHours(u), 0))} giờ/tháng`, tip: '(giờ trước − giờ sau) × số lần/tháng, chỉ cộng ứng dụng AI đã duyệt. Số khai báo, là ước tính.' },
-      runs: { v: nf(approved.reduce((a, u) => a + (+u.perMonth || 0), 0)), unit: 'lượt/tháng', s: 'Lượt công việc có AI hỗ trợ (ứng dụng đã duyệt)', tip: 'Tổng số lần thực hiện/tháng của các ứng dụng AI đã duyệt' }
+      runs: { v: nf(approved.reduce((a, u) => a + (+u.perMonth || 0), 0)), unit: 'lượt/tháng', s: 'Lượt công việc có AI hỗ trợ mỗi tháng', tip: 'Tổng số lần thực hiện/tháng của các ứng dụng AI đã duyệt' }
     };
   }
   function kpis(compact) {
@@ -149,8 +149,7 @@ AIM.views.home = (function () {
     + `<div class="grid2">
         <section class="blk card-blk" id="team">${head('Tiến độ nhóm', 'Theo trạng thái ứng dụng AI · bấm để lọc')}${U.stackBars(H.myGroups().map(gid => ({
           label: U.group(gid).name, attrs: `data-nav="usecases?group=${gid}"`,
-          parts: C.useCaseStatuses.map(s => ({ v: S.all('useCases').filter(u => u.groupId === gid && u.status === s).length, color: C.statuses[s].color, name: U.stLabel(s) })) })), { labelWidth: 160, unit: 'use case' })}
-          ${U.legend(C.useCaseStatuses.map(s => ({ name: U.stLabel(s), color: C.statuses[s].color })))}</section>
+          parts: [{ v: S.all('useCases').filter(u => u.groupId === gid).length, color: '#00843d', name: 'Use case' }] })), { labelWidth: 160, unit: 'use case' })}</section>
         <section class="blk card-blk">${head('Use case chưa triển khai', `${drafts.length} việc còn ở dự thảo`)}
           <div class="lst">${drafts.slice(0, 6).map(u => `<button class="li" data-uc="${u.id}"><span><b>${esc(u.task)}</b><small>${esc(U.group(u.groupId).short)} · ${esc(u.next || 'Chưa có bước tiếp theo')}</small></span>${U.prio(u.priority)}</button>`).join('') || '<div class="empty-note">Không còn use case dự thảo.</div>'}</div></section>
       </div>
@@ -179,7 +178,7 @@ AIM.views.home = (function () {
       over.length && { lv: 'high', t: `${over.length} ứng dụng AI quá hạn`, s: over.slice(0, 2).map(u => u.task).join(' · '), nav: 'usecases' },
       ms.length && { lv: ms.some(r => r.st.key === 'late') ? 'high' : 'med', t: `${ms.length} mốc lộ trình chậm`, s: ms.map(r => r.m.name + ' (' + r.st.label.toLowerCase() + ')').join(' · '), nav: 'roadmap' },
       mism.length && { lv: 'med', t: `${mism.length} Agent đang xây khi chưa đủ tiêu chí`, s: 'Rủi ro đầu tư tự động hóa khi quy trình chưa ổn định', nav: 'agents' },
-      noRev && { lv: 'med', t: `${noRev} nội dung thử nghiệm chưa có người rà soát`, s: 'Thiếu kiểm soát 4 mắt trước khi dùng rộng', nav: 'prompts' }
+      noRev && { lv: 'med', t: `${noRev} nội dung chưa có người rà soát`, s: 'Thiếu kiểm soát 4 mắt trước khi dùng rộng', nav: 'prompts' }
     ].filter(Boolean);
     const top = [...ucs].sort((a, b) => L.savedHours(b) - L.savedHours(a)).slice(0, 5);
     const maxH = Math.max(1, ...top.map(L.savedHours));
@@ -197,7 +196,7 @@ AIM.views.home = (function () {
       </div>
       <div class="grid2">
         <section class="blk card-blk">${head('Top use case hiệu quả', 'Giờ tiết kiệm ước tính/tháng')}
-          <div class="topl">${top.map((u, i) => `<button class="tl" data-uc="${u.id}"><b>${i + 1}</b><span>${esc(u.task)}<small>${esc(U.group(u.groupId).short)} · ${esc(U.stLabel(u.status))}</small></span><i><u style="width:${L.savedHours(u) / maxH * 100}%"></u></i><em>${nf(L.savedHours(u), 1)}</em></button>`).join('')}</div></section>
+          <div class="topl">${top.map((u, i) => `<button class="tl" data-uc="${u.id}"><b>${i + 1}</b><span>${esc(u.task)}<small>${esc(U.group(u.groupId).short)}</small></span><i><u style="width:${L.savedHours(u) / maxH * 100}%"></u></i><em>${nf(L.savedHours(u), 1)}</em></button>`).join('')}</div></section>
         <section class="blk card-blk">${head('Mức độ tham gia theo nhóm', 'Cán bộ đã được giao ứng dụng AI / thành viên nhóm')}
           ${U.stackBars(S.all('groups').map(g => { const mem = S.all('people').filter(x => (x.groups || []).includes(g.id)); const n = mem.filter(x => L.hasUseCase(x.id)).length;
             return { label: g.name, attrs: `data-nav="people?group=${g.id}"`, parts: [{ v: n, color: '#00843d', name: 'Đã tham gia' }, { v: mem.length - n, color: '#dfe5ec', name: 'Chưa tham gia' }], valueLabel: `${n}/${mem.length}` }; }), { labelWidth: 150, unit: 'người' })}</section>

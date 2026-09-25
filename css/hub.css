@@ -459,3 +459,6 @@ ol.ag-flow.v li b{min-width:110px}
 .v-prompts .pipe,.v-prompts .st,.v-prompts select[data-f="status"],
 .v-skills .pipe,.v-skills .st,.v-skills select[data-f="status"],
 .v-agents .pipe,.v-agents .st,.v-agents select[data-f="status"],.v-agents .kpis{display:none!important}
+
+/* Bỏ nhãn trạng thái ở mọi màn hình (kể cả Lãnh đạo, Điều hành và hộp chi tiết) */
+.st,.pipe,select[data-f="status"],.kpi .kstack,.kpi .kstack+div{display:none!important}
