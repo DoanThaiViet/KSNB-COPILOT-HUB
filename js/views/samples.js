@@ -338,7 +338,7 @@ AIM.views.samples = (function () {
 
   function render(el) {
     el.innerHTML = `
-      <div class="phd"><div><h2>Sản phẩm mẫu</h2>
+      <div class="phd"><div><h2>Sản phẩm tạo bởi Copilot</h2>
         <div class="meta">${samples.length} sản phẩm · số liệu giả lập, đã làm mờ · có watermark Ban KSNB</div></div></div>
       <div class="spgrid">${samples.map(sp => `
         <div class="spc" data-id="${sp.id}">
@@ -364,5 +364,5 @@ AIM.views.samples = (function () {
 
   function open(id) { const sp = samples.find(x => x.id === id); if (sp) { cur = 0; viewer(sp); } }
 
-  return { title: 'Sản phẩm mẫu', menu: 'Sản phẩm mẫu', count: () => samples.length, render, open, samples };
+  return { title: 'Sản phẩm tạo bởi Copilot', menu: 'Sản phẩm tạo bởi Copilot', count: () => samples.length, render, open, samples };
 })();

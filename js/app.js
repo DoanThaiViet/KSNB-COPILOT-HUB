@@ -16,8 +16,10 @@ AIM.app = (function () {
       tabs: [['work', 'Việc của tôi'], ['usecases', 'Danh mục ứng dụng AI']] },
     { key: 'assistant', label: 'Trợ lý AI', desc: 'Hỏi nhanh, hoặc dùng trợ lý tự động (Agent) và quy trình nhiều bước (Skill) đã được Ban xây dựng.',
       tabs: [['assistant', 'Hỏi Copilot'], ['agents', 'Trợ lý tự động (Agent)'], ['skills', 'Quy trình (Skill)']] },
-    { key: 'knowledge', label: 'Kho tri thức', desc: 'Tra cứu câu lệnh mẫu, sản phẩm mẫu và mẹo dùng Copilot — một ô tìm cho tất cả.',
-      tabs: [['knowledge', 'Tra cứu nhanh'], ['prompts', 'Câu lệnh mẫu (Prompt)'], ['samples', 'Sản phẩm mẫu'], ['tips', 'Mẹo dùng Copilot']] },
+    { key: 'knowledge', label: 'Kho tri thức', desc: 'Tra cứu câu lệnh mẫu, trợ lý tự động, mẹo dùng Copilot và sản phẩm do Copilot tạo — một ô tìm cho tất cả.',
+      tabs: [['knowledge', 'Tra cứu nhanh'], ['prompts', 'Prompt'], ['agents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']],
+      /* Mục con hiện ngay dưới menu để biết kho gồm những gì */
+      sub: [['prompts', 'Prompt'], ['agents', 'Agent'], ['tips', 'Mẹo dùng Copilot'], ['samples', 'Sản phẩm tạo bởi Copilot']] },
     { key: 'govern', label: 'Điều hành', gov: true, desc: 'Mức độ sử dụng, hiệu quả, lộ trình và nhân sự — dành cho Lãnh đạo, PIC và điều phối.',
       tabs: [['dashboard', 'Tổng quan triển khai'], ['roadmap', 'Lộ trình'], ['people', 'Nhân sự & mức độ tham gia']] }
   ];
@@ -30,10 +32,12 @@ AIM.app = (function () {
     govern: '<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
   };
   let current = { key: 'home', params: {} };
+  let prefSection = null;   // một màn hình (vd. Agent) có thể thuộc 2 khu vực: giữ khu vực người dùng vừa chọn
 
   const canEdit = () => !!H.roleCfg().canEdit;
   const canGov = () => !!H.roleCfg().governance;
-  const sectionOf = key => SECTIONS.find(s => s.tabs.some(t => t[0] === key)) || SECTIONS[0];
+  const has = (s, key) => s.tabs.some(t => t[0] === key);
+  const sectionOf = key => SECTIONS.find(s => s.key === prefSection && has(s, key)) || SECTIONS.find(s => has(s, key)) || SECTIONS[0];
   const visibleSections = () => SECTIONS.filter(s => !s.gov || canGov());
   /* Danh sách trang cho ô tra cứu */
   const pages = () => visibleSections().flatMap(s => s.tabs.map(([k, l]) => ({ key: k, label: l, section: s.label, keywords: KEYWORDS[k] || '' })));
@@ -44,7 +48,8 @@ AIM.app = (function () {
     const params = Object.fromEntries(new URLSearchParams(qs || ''));
     return { key: AIM.views[key] ? key : 'home', params };
   }
-  function go(key, params) {
+  function go(key, params, sec) {
+    if (sec) prefSection = sec;
     const qs = params ? new URLSearchParams(params).toString() : '';
     const h = '#/' + key + (qs ? '?' + qs : '');
     if (location.hash === h) render(); else location.hash = h;
@@ -53,7 +58,9 @@ AIM.app = (function () {
   function renderMenu() {
     const sec = sectionOf(current.key);
     $('#menu').innerHTML = visibleSections().map(s =>
-      `<button data-go="${s.tabs[0][0]}" class="${s === sec ? 'active' : ''}" title="${esc(s.label)}"${s === sec ? ' aria-current="page"' : ''}>${ICONS[s.key]}<span>${esc(s.label)}</span>${s.gov ? '<em class="cnt gov">QL</em>' : ''}</button>`).join('');
+      `<button data-go="${s.tabs[0][0]}" data-sec="${s.key}" class="${s === sec ? 'active' : ''}" title="${esc(s.label)}"${s === sec && current.key === s.tabs[0][0] ? ' aria-current="page"' : ''}>${ICONS[s.key]}<span>${esc(s.label)}</span>${s.gov ? '<em class="cnt gov">QL</em>' : ''}</button>`
+      + (s.sub ? `<div class="msub">${s.sub.map(([k, l]) => { const on = s === sec && current.key === k, v = AIM.views[k], n = v && v.count ? v.count() : null;
+          return `<button data-go="${k}" data-sec="${s.key}" class="${on ? 'on' : ''}"${on ? ' aria-current="page"' : ''}><span>${esc(l)}</span>${n != null ? `<em class="cnt">${n}</em>` : ''}</button>`; }).join('')}</div>` : '')).join('');
   }
   function renderIdentity() {
     const p = H.person(), r = H.role();
@@ -92,7 +99,7 @@ AIM.app = (function () {
     const img = H.visual(sec.key);
     return `<div class="sec-hero${img ? '' : ' noimg'}"${img ? ` style="--img:url('${esc(img)}')"` : ''}>
         <div class="sec-copy"><div class="eyebrow">${esc(C.appName)}</div><h2>${esc(sec.label)}</h2><p>${esc(sec.desc || '')}</p></div></div>
-      ${sec.tabs.length > 1 ? `<nav class="subtabs" aria-label="${esc(sec.label)}">${sec.tabs.map(([k, l]) => `<button data-go="${k}" class="${k === key ? 'active' : ''}"${k === key ? ' aria-current="page"' : ''}>${esc(l)}</button>`).join('')}</nav>` : ''}`;
+      ${sec.tabs.length > 1 ? `<nav class="subtabs" aria-label="${esc(sec.label)}">${sec.tabs.map(([k, l]) => `<button data-go="${k}" data-sec="${sec.key}" class="${k === key ? 'active' : ''}"${k === key ? ' aria-current="page"' : ''}>${esc(l)}</button>`).join('')}</nav>` : ''}`;
   }
 
   function render() {
@@ -122,7 +129,7 @@ AIM.app = (function () {
     await AIM.store.init();
 
     document.addEventListener('click', e => {
-      const b = e.target.closest('#menu [data-go], .subtabs [data-go]'); if (b) go(b.dataset.go);
+      const b = e.target.closest('#menu [data-go], .subtabs [data-go]'); if (b) { prefSection = b.dataset.sec || null; go(b.dataset.go); }
       if (e.target.closest('#whoBtn')) openIdentity();
     });
     AIM.copilot.mountQuickSearch($('#qs'));

@@ -349,3 +349,12 @@ body.cp-on .cp-fab{opacity:0;pointer-events:none}
   .cp-fab span:last-child{display:none}.cp-fab{padding:0 10px;right:14px;bottom:14px}
 }
 @media print{ .cp-fab,.cp-panel,.hsearch{display:none!important} }
+
+/* Mục con dưới menu (Kho tri thức) */
+.msub{display:flex;flex-direction:column;gap:1px;margin:2px 0 6px 22px;padding-left:12px;border-left:1.5px solid var(--line)}
+nav.menu .msub button{padding:6px 10px;font-size:12.5px;font-weight:500;color:var(--muted);border-radius:8px}
+nav.menu .msub button:hover{color:var(--ink);background:#f5f7fa}
+nav.menu .msub button.on{color:var(--navy);font-weight:700;background:#f3f4fb}
+nav.menu .msub button::before{display:none}
+nav.menu .msub .cnt{font-size:10.5px}
+@media(max-width:1024px){ .msub{display:none} }
