@@ -362,5 +362,7 @@ AIM.views.samples = (function () {
     });
   }
 
-  return { title: 'Sản phẩm mẫu', menu: 'Sản phẩm mẫu', count: () => samples.length, render, samples };
+  function open(id) { const sp = samples.find(x => x.id === id); if (sp) { cur = 0; viewer(sp); } }
+
+  return { title: 'Sản phẩm mẫu', menu: 'Sản phẩm mẫu', count: () => samples.length, render, open, samples };
 })();

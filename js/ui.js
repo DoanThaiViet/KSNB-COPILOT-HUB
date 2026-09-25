@@ -76,7 +76,7 @@ AIM.ui = (function () {
     el.addEventListener('click', e => { if (e.target.closest('[data-close]')) close(); });
     document.body.appendChild(el);
     document.body.style.overflow = 'hidden';
-    document.querySelectorAll('header.top,.shell,.quick-ai-fab').forEach(n => n.inert = true);
+    document.querySelectorAll('header.top,.shell,.cp-fab,.cp-panel').forEach(n => n.inert = true);
     el.addEventListener('keydown', e => {
       if (e.key !== 'Tab') return;
       const focusable = [...el.querySelectorAll('button,a[href],input,select,textarea,summary,[tabindex="0"]')].filter(n => !n.disabled && n.offsetParent !== null);
@@ -92,7 +92,7 @@ AIM.ui = (function () {
   }
   const modal = o => overlay('modal', o);
   const drawer = o => overlay('drawer', o);
-  function close() { $$('.ovl').forEach(o => o.remove()); document.body.style.overflow = ''; document.querySelectorAll('header.top,.shell,.quick-ai-fab').forEach(n => n.inert = false); if (returnFocus?.isConnected) returnFocus.focus(); returnFocus = null; }
+  function close() { $$('.ovl').forEach(o => o.remove()); document.body.style.overflow = ''; document.querySelectorAll('header.top,.shell,.cp-fab,.cp-panel').forEach(n => n.inert = false); if (returnFocus?.isConnected) returnFocus.focus(); returnFocus = null; }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
   function toast(msg) {
